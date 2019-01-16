@@ -1,0 +1,5 @@
+PROJECT_NAME = Infotheory
+PROJECT_NUMBER = 1.0
+JAVADOC_AUTOBRIEF = YES
+TOC_INCLUDE_HEADINGS = 1
+INPUT = ../../infotheory/infotools.py
