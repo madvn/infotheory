@@ -38,6 +38,6 @@ Using this package in your own code involves three steps.
 
 See [demos](https://github.com/madvn/infotheory/tree/master/demos) and [website](https://madvn.github.io/infotheory/) for sample programs on how to use this package.
 
-## Contact 
+## Contact
 
-Created by Madhavun Candadai and Eduardo Izquierdo. Contact Madhavun at madvncv[at]gmail.com
+Created by Madhavun Candadai and Eduardo J. Izquierdo. Contact Madhavun at madvncv[at]gmail.com
