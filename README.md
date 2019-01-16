@@ -15,4 +15,6 @@ For C++, simply download [InfoTools.h](https://github.com/madvn/infotheory/blob/
 
 ## Usage
 
-![usage flowchart](documentation/usage_icons.png =0.5x)
+<p align="center">
+<img src="https://github.com/madvn/infotheory/blob/master/documentation/usage_icons.png" width="480">
+</p>
