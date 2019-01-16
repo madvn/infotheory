@@ -1,4 +1,3 @@
 ## Website and docs
 
-https://pages.github.iu.edu/madcanda/Infotheory/
-
+https://madvn.github.io/infotheory/
