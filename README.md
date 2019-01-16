@@ -49,5 +49,4 @@ Created by Madhavun Candadai and Eduardo J. Izquierdo. Contact Madhavun at madvn
     <li id="scholarpedia:Shannon_entropy"><a href="http://www.scholarpedia.org/article/Entropy#Shannon_entropy" target="_blank"> http://www.scholarpedia.org/article/Entropy#Shannon_entropy</a></li>
     <li id="scholarpedia:Mutual_information"><a href="http://www.scholarpedia.org/article/Mutual_information" target="_blank"> http://www.scholarpedia.org/article/Mutual_information</a></li>
     <li id="williams:2010">Williams, P. L., & Beer, R. D. (2010). Nonnegative decomposition of multivariate information. arXiv preprint arXiv:1004.2515.</li>
-    <li id="timme:2014">Timme, N., Alford, W., Flecker, B., & Beggs, J. M. (2014). Synergy, redundancy, and multivariate information measures: an experimentalist’s perspective. Journal of computational neuroscience, 36(2), 119-140.</li>
 </ol>
