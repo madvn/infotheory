@@ -44,7 +44,7 @@ Created by Madhavun Candadai and Eduardo J. Izquierdo. Contact Madhavun at madvn
 
 ## References
 
-<ol class="ml-25">
+<ol>
     <li id="scott:1985">Scott, D. W. (1985). Averaged shifted histograms: effective nonparametric density estimators in several dimensions. The Annals of Statistics, 1024-1040.</li>
     <li id="scholarpedia:Shannon_entropy"><a href="http://www.scholarpedia.org/article/Entropy#Shannon_entropy" target="_blank"> http://www.scholarpedia.org/article/Entropy#Shannon_entropy</a></li>
     <li id="scholarpedia:Mutual_information"><a href="http://www.scholarpedia.org/article/Mutual_information" target="_blank"> http://www.scholarpedia.org/article/Mutual_information</a></li>
