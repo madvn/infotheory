@@ -42,7 +42,7 @@ See [demos](https://github.com/madvn/infotheory/tree/master/demos) and [website]
 
 Created by Madhavun Candadai and Eduardo J. Izquierdo. Contact Madhavun at madvncv[at]gmail.com
 
-### References
+## References
 
 <ol class="ml-25">
     <li id="scott:1985">Scott, D. W. (1985). Averaged shifted histograms: effective nonparametric density estimators in several dimensions. The Annals of Statistics, 1024-1040.</li>
