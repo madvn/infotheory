@@ -15,4 +15,4 @@ For C++, simply download [InfoTools.h](https://github.com/madvn/infotheory/blob/
 
 ## Usage
 
-![usage flowchart](documentation/usage_icons.png)
+![usage flowchart](documentation/usage_icons.png =0.5x)
