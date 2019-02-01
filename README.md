@@ -33,7 +33,7 @@ For C++, simply download [InfoTools.h](https://github.com/madvn/infotheory/blob/
 Using this package in your own code involves three steps.
 
 <p align="center">
-<img src="https://github.com/madvn/infotheory/blob/master/documentation/usage_icons.png" width="480">
+<img src="https://github.com/madvn/infotheory/blob/master/demos/usage_icons.png" width="480">
 </p>
 
 See [demos](https://github.com/madvn/infotheory/tree/master/demos) and [website](https://madvn.github.io/infotheory/) for sample programs on how to use this package.
