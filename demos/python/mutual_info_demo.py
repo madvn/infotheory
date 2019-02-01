@@ -16,7 +16,8 @@ mins = [0]*dims # min value or left edge of binning for each dimension
 maxs = [1]*dims # max value or right edge of binning for each dimension
 
 ## Creating object
-it = infotheory.InfoTools(dims, nreps, nbins, mins, maxs)
+it = infotheory.InfoTools(dims, nreps)
+it.set_equal_interval_binning(nbins, mins, maxs)
 
 ## Adding data - concatenate data from all vars
 for _ in range(100):

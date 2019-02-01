@@ -27,8 +27,10 @@ void binary_pid(int dims, int nReps, int binCounts, TVector<TVector <double> >& 
 
     // Creating the object
     InfoTools it(dims, nReps);
-    it.setBinCounts(nBins);
-    it.setDataRanges(mins, maxs);
+
+    // Binning
+    it.setEqualIntervalBinning(nBins, mins, maxs);
+    //it.displayConfig();
 
     // adding the data
     it.addData(data);

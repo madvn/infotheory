@@ -5,6 +5,7 @@
 // Nov 2018
 //**************************************************************************//
 #include <iostream>
+#include <cstdlib>
 #include <math.h>
 #include "VectorMatrix.h"
 #include "InfoTools.h"
@@ -14,11 +15,13 @@ using namespace std;
 double D_RAND_MAX = RAND_MAX; // typecasting to double
 
 int main(){
+    // set random seed
+    srand(0);
 
     // Setup
     int dims = 4; // dimensionality of all random vars combined
     int nReps = 1; // number of shifted binnings over which data is binned and averaged
-    int binCounts = 10;
+    int binCounts = 3;
     // number of bins along each dimension of the data
     TVector<int> nBins; // declaring TVector list
     nBins.SetBounds(1,dims); // defining bounds
@@ -37,8 +40,20 @@ int main(){
 
     // Creating the object
     InfoTools it(dims, nReps);
-    it.setBinCounts(nBins);
-    it.setDataRanges(mins, maxs);
+
+    // Set Binning scheme - equal interval
+    //it.setEqualIntervalBinning(nBins, mins, maxs);
+
+    // Set Binning scheme - manually setting boundaries
+    TVector<TVector <double> > boundaries;
+    boundaries.SetBounds(1,dims);
+    for(int d=1; d<=dims; d++){
+        boundaries[d].SetBounds(1,nBins[d]-1);
+        for(int b=1; b<nBins[d]; b++){
+            boundaries[d][b] = mins[b] + b*(maxs[d]-mins[d])/nBins[d];
+        }
+    }
+    it.setBinBoundaries(boundaries);
     it.displayConfig();
 
     // Adding data

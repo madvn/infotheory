@@ -48,19 +48,25 @@ extern "C"
     }
 
     /****************
-    data handlers
+    binning methods
     ****************/
-    void setBinCounts_c_wrapper(InfoTools* it, PyObject* nbins){
+    void setEqualIntervalBinning_c_wrapper(InfoTools* it, PyObject* nbins, PyObject* mins, PyObject* maxs){
         TVector<int> t_nbins;
         to_tvector_int(t_nbins, nbins);
-        it->setBinCounts(t_nbins);
-    }
-    void setDataRanges_c_wrapper(InfoTools* it, PyObject* mins, PyObject* maxs){
         TVector<double> t_mins, t_maxs;
         to_tvector_double(t_mins, mins);
         to_tvector_double(t_maxs, maxs);
-        it->setDataRanges(t_mins, t_maxs);
+        it->setEqualIntervalBinning(t_nbins, t_mins, t_maxs);
     }
+    void setBinBoundaries_c_wrapper(InfoTools* it, PyObject* boundaries, int dim_index){
+        TVector<double> t_boundaries;
+        to_tvector_double(t_boundaries, boundaries);
+        it->setBinBoundaries(t_boundaries, dim_index);
+    }
+
+    /****************
+    data handlers
+    ****************/
     void addDataPoint_c_wrapper(InfoTools* it, PyObject* dataPoint){
         TVector<double> t_dataPoint;
         to_tvector_double(t_dataPoint, dataPoint);

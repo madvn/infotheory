@@ -12,7 +12,8 @@ import infotheory
 data = [[0,0,0],[0,1,1],[1,0,1],[1,1,0]]
 
 # creating the object and adding data
-it_xor = infotheory.InfoTools(3, 1, [2]*3, [0]*3, [1]*3)
+it_xor = infotheory.InfoTools(3, 0)
+it_xor.set_equal_interval_binning([2]*3, [0]*3, [1]*3)
 it_xor.add_data(data)
 
 # PID-ing
@@ -33,7 +34,8 @@ print("synergy = {}\n".format(synergy))
 data = [[0,0,0],[0,1,0],[1,0,0],[1,1,1]]
 
 # creating the object and adding data
-it_and = infotheory.InfoTools(3, 1, [2]*3, [0]*3, [1]*3)
+it_and = infotheory.InfoTools(3, 0)
+it_and.set_equal_interval_binning([2]*3, [0]*3, [1]*3)
 it_and.add_data(data)
 
 # PID-ing

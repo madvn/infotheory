@@ -10,13 +10,16 @@
 
 import numpy as np
 import infotheory
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 # range of probabilties for HEADS in coin flip
 p = np.arange(0,1.01,0.01)
 entropies = []
 for pi in p:
-    it = infotheory.InfoTools(1, 1, [2], [0], [1])
+    it = infotheory.InfoTools(1, 0)
+    it.set_equal_interval_binning([2], [0], [1])
 
     # flipping coin 10000 times
     for _ in range(10000):

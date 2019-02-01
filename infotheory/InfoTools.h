@@ -2,17 +2,23 @@
 // A Data handler class that deals with binning and
 // computing probabilities
 //
-// UPDATE HISTORY
 // Created - March, 2018 - MCV
 /******************************************************/
 
 #include <iostream>
+#include <math.h>
 #include "VectorMatrix.h"
 
 #pragma once
+#define TESTMODE 0
 
 class InfoTools{
+    // making everything public to make testing easier
+    #if !TESTMODE
     private:
+    #else
+    public:
+    #endif
         int BIN_LIMIT;
         // numShifts(numDims(numBins))
         // to allow different number of bins along different dimensions
@@ -28,21 +34,65 @@ class InfoTools{
         //TVector<TMatrix<double> > probs; // all combinations of probabilities
 
         TVector<int> nBins; // number of bins along each dimension
-        TVector<double> binSizes; // size of bin along each dimension
 
         double totalPoints,totalAvgPoints;
         int nDims, nReps, dataLen;
-        int dataInitedFlag,dataReadyFlag;
+        int dataInitedFlag, dataReadyFlag;
+        TVector<int> binningInitedFlag;
 
+    #if !TESTMODE
     public:
+    #endif
+        /*******************
+        * Inits
+        *******************/
+        InfoTools(int dims, int nreps=0){
+            //!Constructor
+            /*! ARGS\n
+            *     dims - dimensionality of data (all variables combined)\n
+            *     nreps - number of reps on each side of bin boundary to compute average shifted histogram\n
+            */
+            BIN_LIMIT = 500;
+
+            // resetting vars
+            nDims = dims;
+            nReps = nreps*2 + 1;
+            dataLen = 0; // number of non-empty bins, across all shifts
+            totalPoints = totalAvgPoints = 0;
+
+            bins.SetBounds(1,nReps);
+            for(int r=1; r<=nReps; r++){
+                // bins[r] is all bins for a particular shift
+                bins[r].SetBounds(1,nDims);
+            }
+            binnedData.SetBounds(1,nReps);
+
+            nBins.SetBounds(1,dims);
+            nBins.FillContents(0.);
+
+            //cout << "nBins = " << nBins <<endl;
+
+            // flag set
+            dataInitedFlag = 0;
+            dataReadyFlag = 0;
+            binningInitedFlag.SetBounds(1,nDims);
+            binningInitedFlag.FillContents(0.);
+
+            //cout << "Total points = " << totalPoints << endl;
+        }
+
+        ~InfoTools(){};
+
         /*******************
         * Inspection tools
         *******************/
+
+        //!Display the config for analyses such as number of bins, dimensionality etc.
         void displayConfig(){
             cout << "************************ CONFIG ************************" << endl;
             cout << "Total dimensionality = " << nDims << endl;
             cout << "Number of shifted bins = " << nReps << endl;
-            cout << "Bins along each dimension = " << binSizes << endl;
+            cout << "Number of bins in each dimension = " << nBins << endl;
             cout << "Bin boundaries in each dimension:" << endl;
             for(int d=1; d<=nDims;d++){
                 cout << "\tFor dimension #" << d << endl;
@@ -52,87 +102,34 @@ class InfoTools{
             }
             cout << "********************************************************" << endl;
         }
+
+        //!Display current status such as number of points added, number of non-empty bins etc.
         void displaySnapshot(){
             cout << "************************ SNAPSHOT ************************" << endl;
             cout << "Number of total datapoints added = " << totalPoints << endl;
             cout << "Number of populated bins = " << dataLen << endl;
-            cout << "Size of populated bin list = " << binnedData[1].ColumnSize() << endl;
+            if(!dataReadyFlag)
+                cout << "Size of populated bin list = " << binnedData[1].ColumnSize() << endl;
             cout << "Has data been collapsed across multiple shifted binnings? " << (dataReadyFlag==0 ? "No":"Yes") << endl;
-            cout << "Size of average binned data = " << avgBinnedData.ColumnSize() << endl;
+            if(dataReadyFlag)
+                cout << "Size of average binned data = " << avgBinnedData.ColumnSize() << endl;
             cout << "**********************************************************" << endl;
         }
+
         /*******************
-        * Inits
+        * Binning schemes
         *******************/
-        InfoTools(int dims, int nreps=1){
-            //!Constructor
-            /*! ARGS\n
-            *     dims - dimensionality of data (all variables combined)\n
-            *     nreps - number of reps to compute average shifted histogram\n
-            *     Call setBinCounts and setDataRanges right away after creating the object
-            */
-            BIN_LIMIT = 500;
-
-            // resetting vars
-            totalPoints = totalAvgPoints = 0;
-            nDims = nReps = dataLen = 0;
-
-            bins.SetBounds(1,nreps);
-            binnedData.SetBounds(1,nreps);
-
-            nBins.SetBounds(1,dims);
-            nBins.FillContents(0.);
-            binSizes.SetBounds(1,dims);
-            binSizes.FillContents(0.);
-
-            //cout << "nBins = " << nBins <<endl;
-            //cout << "binSizes = " << binSizes << endl;
-
-            nDims = dims;
-            nReps = nreps;
-            dataLen = 0; // number of non-empty bins, across all shifts
-
-            // flag set
-            dataInitedFlag = 0;
-            dataReadyFlag = 0;
-
-            //cout << "Total points = " << totalPoints << endl;
-        }
-
-        ~InfoTools(){};
-
-        //!Set the number of bins along each dimension
-        /*!     nbs - TVector with lenght = dims and has number of bins for each dimension
-        */
-        void setBinCounts(TVector<int>& nbs){
-            if(nbs.Size() != nDims){
-                cerr << "ERROR: Bin counts should be a list of length = total dimensionality = " << nDims << endl;
-                exit(1);
-            }
-
-            int d1=1;
-            // Using LowerBound and UpperBound here because user might use 0 or 1 indexing
-            for(int d=nbs.LowerBound(); d<= nbs.UpperBound(); d++){
-                nBins[d1] = nbs[d];
-                d1+=1;
-            }
-
-            // if there is more than one rep, create empty bin boundary vecs for shifted binnings
-            for(int r=1; r<=nReps; r++){
-                // bins[r] is all bins for a particular shift
-                bins[r].SetBounds(1,nDims);
-                // set bounds on bin TVecs
-                for(int d=1; d<= nDims; d++){
-                    bins[r][d].SetBounds(1,nBins[d]);
-                }
-            }
-        }
 
         //!Set bounds on probs depending on max(ids)
-        /*!     mins - TVector with length=dims that has min on each dim\n
+        /*!     nbs - TVector with length=dims and has number of bins for each dimension\n
+        *     mins - TVector with length=dims that has min on each dim\n
         *     maxs - TVector with length=dims that has max on each dim
         */
-        void setDataRanges(TVector<double>& mins, TVector<double>& maxs){
+        void setEqualIntervalBinning(TVector<int>& nbs, TVector<double>& mins, TVector<double>& maxs){
+            if(dataLen > 0){
+                cerr << "ERROR: Cannot set bins after if at least one bin has been populated" << endl;
+                exit(1);
+            }
             // init bins[r][d] with shifted values from mins[d] to maxs[d] (left margin of bins)
             if(mins.Size() != nDims){
                 cerr << "ERROR: 'mins' should be a list of length = total dimensionality = " << nDims << endl;
@@ -142,50 +139,522 @@ class InfoTools{
                 cerr << "ERROR: 'maxs' should be a list of length = total dimensionality = " << nDims << endl;
                 exit(1);
             }
-
-            TVector<double> offset, unitOffset;
-
-            offset.SetBounds(1,nDims);
-            unitOffset.SetBounds(1,nDims);
-
-            // set offset to left most shifted bins
-            int d1=1;
-            // Using LowerBound and UpperBound here because user might use 0 or 1 indexing
-            for(int d=mins.LowerBound(); d<=mins.UpperBound(); d++){
-                binSizes[d1] = (maxs[d]-mins[d])/nBins[d1];
-                //binSizes[d1] += binSizes[d1]/10.;
-                if(nReps==1){
-                    offset[d1] = mins[d];//-(binSizes[d1]/10.);
-                }
-                else{
-                    offset[d1] = mins[d]-(binSizes[d1]/2.);
-                }
-                unitOffset[d1] = binSizes[d1]/nReps;
-                d1+=1;
+            if(nbs.Size() != nDims){
+                cerr << "ERROR: Bin counts should be a list of length = total dimensionality = " << nDims << endl;
+                exit(1);
             }
 
+            int b=nbs.LowerBound(), mi=mins.LowerBound(), ma=maxs.LowerBound();
+            //cout << b << " " << mi << " " << ma << endl;
+            for(int d=1; d<=nDims; d++){
+                TVector<double> boundaries;
+                boundaries.SetBounds(1,nbs[b]-1);
+                for(int bo=1; bo<nbs[b]; bo++){
+                    double boundary = mins[mi] + bo*(maxs[ma]-mins[mi])/nbs[b];
+                    boundaries[bo] = boundary;
+                }
+                setBinBoundaries(boundaries, d-1);
+                b++;mi++;ma++;
+            }
+        }
+
+        //!Set left-boundaries for the binning of specified dimension
+        /*!     boundaries - TVector that has bin-margins for specified dimension. Length of list = number_of_bins-1, left most bin is (-inf,list[0]) and right most bin is (list[-1],inf)
+        *     dim_index - int with dimension of choice - 0-indexing
+        */
+        void setBinBoundaries(TVector<double> boundaries, int dimIndex){
+            if(dataLen > 0){
+                cerr << "ERROR: Cannot set bins after if at least one bin has been populated" << endl;
+                exit(1);
+            }
+            int bLb = boundaries.LowerBound();
+            int bUb = boundaries.UpperBound();
+            dimIndex += 1; // indexing is 1 in this library
+            nBins[dimIndex] = boundaries.Size()+1;
+            int bi = nBins[dimIndex]-1;
+            // if there is more than one rep, create empty bin boundary vecs for shifted binnings
+            for(int r=1; r<=nReps; r++){
+                // set bounds on bin TVecs
+                bins[r][dimIndex].SetBounds(1,bi);
+            }
+
+            // first setting for 1 rep
+            for(int b=1,b1=bLb; b<=bi; b++,b1++){
+                bins[1][dimIndex][b] = boundaries[b1];
+            }
+
+            // now for the other reps
+            double offsetWidth, maxLimit;
+            TVector<double> unitOffset, minLimit;
+            unitOffset.SetBounds(1,bi);
+            minLimit.SetBounds(1,bi);
+            for(int b=1,b1=bLb; b<bi; b++,b1++){
+                offsetWidth = (boundaries[b1+1]-boundaries[b1])/2;
+                minLimit[b] = boundaries[b1]-offsetWidth;
+                //maxLimit = boundaries[b1]+offsetWidth;
+                unitOffset[b] = (boundaries[b1] - minLimit[b])/(((nReps-1)/2)+1);
+            }
+            // // setting last bin separately using same offset as last but one
+            minLimit[bi] = boundaries[bUb] - offsetWidth;
+            unitOffset[bi] = (boundaries[bUb] - minLimit[bi])/(((nReps-1)/2)+1);
+
+            int r;
+            // for each rep to the left of boundaries
+            for(r=2; r<=((nReps-1)/2)+1; r++){
+                // for each bin
+                for(int b=1,b1=bLb; b<=bi; b++,b1++){
+                    bins[r][dimIndex][b] = boundaries[b1] - unitOffset[b]*(r-1);
+                    //cout << bins[r][d][b] << " ";
+                }
+            }
+            // for each rep to the right of boundaries
+            for(r=((nReps-1)/2)+2; r<=nReps; r++){
+                // for each bin
+                for(int b=1,b1=bLb; b<=bi; b++,b1++){
+                    bins[r][dimIndex][b] = boundaries[b1] + unitOffset[b]*(r-1);
+                    //cout << bins[r][d][b] << " ";
+                }
+            }
+            binningInitedFlag[dimIndex] = 1;
+        }
+
+        //!Set left-boundaries for the binning of all dimensions
+        /*!     boundaries - TVector that has TVectors for left-margin of all dims. Length of each TVector = number_of_bins-1, left most bin is (-inf,list[0]) and right most bin is (list[-1],inf)
+        */
+        void setBinBoundaries(TVector<TVector <double> > boundaries){
+            if(boundaries.Size() != nDims){
+                cerr << "ERROR: Boundaries should be a list of length = total dimensionality = " << nDims << endl;
+                exit(1);
+            }
+            int di=1;
+            for(int d=boundaries.LowerBound(); d<=boundaries.UpperBound(); d++){
+                setBinBoundaries(boundaries[d], di-1); // due to 0-indexing of dims in setBinBoundaries
+                di++;
+            }
+        }
+
+        /*******************
+        * Data Handler
+        *******************/
+        //!Identify bin for given datapoint and add to count of points in that bin
+        /*!     dataPoint - TVector with length=dims contains the datapoint to be added
+        */
+        void addDataPoint(TVector<double>& dp){
+            for(int d=1; d<=nDims; d++){
+                if(binningInitedFlag[d] == 0){
+                    cerr << "ERROR: binning has not been specified for dimension " << d-1 << " (0-indexing)" << endl;
+                    exit(1);
+                }
+            }
+            if(dataReadyFlag){
+                cout << "WARNING: Datapoint is being added after existing collapsing binned data. Previous datapoints will be lost." << endl;
+                cout << "All datapoints need to be added first before using any information theoretic tools" << endl;
+            }
+            if(dp.Size() != nDims){
+                cerr << "ERROR: Each datapoint must be of size = total dimensionality = " << nDims << " *** ";
+                cerr << "Skipping this datapoint" << endl;
+                return;
+            }
+
+            // renormalizing bounds
+            TVector<double> dataPoint;
+            normalizeBounds(dataPoint, dp);
+
+            dataReadyFlag = 0;
+            totalPoints++;
+            // locate bin and update counts
+            // may need to do for several bin lists depending on shiftedFlag
+            //cout << "addDataPoint " << endl;
+            //cout << "dataInitedFlag " << dataInitedFlag << endl;
+            if(!dataInitedFlag){
+                //cout << "initing data" << endl;
+                for(int r=1; r<=nReps; r++){
+                    binnedData[r].SetBounds(1,BIN_LIMIT,1,nDims+1);
+                    binnedData[r].FillContents(0);
+                }
+                dataInitedFlag = 1;
+            }
+
+            // bin for this dataPoint
+            TVector<double> this_bin;
+            this_bin.SetBounds(1,nDims);
+            this_bin.FillContents(0);
+
+            //cout << "locating bin " << binSizes << endl;
             // for each rep
             for(int r=1; r<=nReps; r++){
                 // for each dimension
+                this_bin.FillContents(0);
+                int valid_dBins=0;
                 for(int d=1; d<=nDims; d++){
                     // for each bin
                     for(int b=1; b<=nBins[d]; b++){
-                        bins[r][d][b] = (offset[d])+(binSizes[d]*(b-1));
-                        //cout << bins[r][d][b] << " ";
+                        //cout << bins[r][d][b] << " " << dataPoint[d] << " " << bins[r][d][b]+binSizes[d] << " " ;
+                        //cout << (bins[r][d][b] <= dataPoint[d] && dataPoint[d] < bins[r][d][b]+binSizes[d]) << endl;
+                        if(b == 1){
+                            // just for the last bin check only right margin
+                            if(dataPoint[d] < bins[r][d][1]){
+                                // found bin for particular d
+                                //cout << "dim" << d << " ";
+                                valid_dBins += 1;
+                                this_bin[d] = b;
+                                break;
+                            }
+                        }
+                        else if(b == nBins[d]){
+                            // just for the last bin check only left margin
+                            if(dataPoint[d] >= bins[r][d][b-1]){
+                                // found bin for particular d
+                                //cout << "dim" << d << " ";
+                                valid_dBins += 1;
+                                this_bin[d] = b;
+                                break;
+                            }
+                        }
+                        else{
+                            //for all other bins, check both margins
+                            if(bins[r][d][b-1] <= dataPoint[d] && dataPoint[d] < bins[r][d][b]){
+                                // found bin for particular d
+                                //cout << "dim" << d << " ";
+                                valid_dBins += 1;
+                                this_bin[d] = b;
+                                break;
+                            }
+                        }
                     }
-                    //cout << endl << "binsizes " << binSizes[d] << endl;
                 }
-
-                // update offset for next rep
-                for(int d=1; d<=nDims; d++){
-                    offset[d] += unitOffset[d];
+                //cout << "valid_dBins=" << valid_dBins << endl;
+                if(valid_dBins == nDims){
+                    int added = 0;
+                    // increment or insert this_bin at binnedData[r][data_len,:]
+                    //cout << "nRep = " << r << endl;
+                    added = addOrInsertCoords(this_bin,binnedData[r]);
+                    if(added==1){
+                        dataLen++;
+                    }
+                    //cout << added << " " << dataLen << " " << binnedData[r].ColumnSize() << endl;
+                    //cout << "Before finishing " << r << endl;
                 }
             }
 
-            //cout << "binSizes = " << binSizes << endl;
-            //cout << "Done setDataRanges" << endl;
+            //cout << "Finished adding point" << endl << endl;
+            //cout << "Data Length = " << dataLen << " Total Points = " << totalPoints << endl;
         }
 
+        //! Add list of points at a time
+        /*     data - TVector with length=number of points, each point being TVector with length=dims
+        */
+        void addData(TVector<TVector<double> >& data){
+            for(int d=1; d<=data.Size(); d++)
+                addDataPoint(data[d]);
+        }
+
+        /*******************
+        * Information tools
+        *******************/
+        //!Returns entropy of var along dims with varIDs==0
+        /*!Example:
+        if dims = 4, 4D datapoints will be added, but if only the first 2 dimensions make up the variable of interest, then set
+        varIDs[1] = 1; varIDs[2] = 1; varIDs[3] = -1; varIDs[4] = -1\n
+        The dims with varID==-1 will be ignored
+        */
+        double entropy(TVector<int>& vIDs){
+            if(vIDs.Size() != nDims){
+                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
+                cerr << "Skipping this call" << endl;
+                return 0.;
+            }
+
+            TVector<int> varIDs;
+            normalizeBounds(varIDs, vIDs);
+
+            double entropy = 0.;
+            TVector<double> p_x;
+            computeIndProbs(p_x,varIDs);
+
+            // iterate over all x values
+            for(int xi=1; xi<=p_x.Size(); xi++){
+                if(p_x[xi] > 0)
+                    entropy -= p_x[xi]*log2(p_x[xi]);
+            }
+            return entropy;
+        }
+
+        //! Return mutual information between vars along dims varIDs==0 and varIDs==1
+        /*! Set other varIDs of dims to be ignored to -1
+        */
+        double mutualInfo(TVector<int>& vIDs){
+            if(vIDs.Size() != nDims){
+                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
+                cerr << "Skipping this call" << endl;
+                return 0.;
+            }
+
+            TVector<int> varIDs;
+            normalizeBounds(varIDs, vIDs);
+
+            // computer probabilities given the var IDs
+            TMatrix<double> p_xy;
+            computeJointProbs(p_xy,varIDs);
+
+            //cout << "From mutualInfo"<< endl << p_xy << endl;
+
+            double mi = 0.0;
+            // parse through each unique data point
+            for (int i = 1; i <= p_xy.ColumnSize(); i++)
+            {
+                mi += p_xy[i][3]*log2(p_xy[i][3]/(p_xy[i][1]*p_xy[i][2]));
+                //cout << "from mi = " << p_xy[i][3]*log2(p_xy[i][3]/(p_xy[i][1]*p_xy[i][2])) << endl;
+            }
+            return mi;
+        }
+
+        #ifndef DOXYGEN_SHOULD_SKIP_THIS
+        void specificInfo(TVector<double>& si, TVector<int>& varIDs){
+            // specific info for var values identified by varIDs==0, in si
+
+            // ID 0 is the one we want specific information about
+            TVector<TVector<TVector<double> > > px;
+            //cout << "in specific info " << endl;
+            computeSpecProbs(px, varIDs);
+            //cout << " Back in spec info " << endl;
+
+            si.SetBounds(1,px.Size());
+
+            for (int x = 1; x <= px.Size(); x++)
+            {
+                si[x] = 0.0;
+                for (int y = 1; y <= px[x][2].Size(); y++)
+                {
+                    si[x] += px[x][3][y] * log2(px[x][3][y] / (px[x][1][1] * px[x][2][y]));
+                    //cout << px[x][1][1] << " " << px[x][2][y] << " " << px[x][3][y] << " " << px[x][3][y] * log2( px[x][3][y] / (px[x][1][1] * px[x][2][y])) << endl;
+                }
+                //si[x]=si[x]/px[x][1][1]; //XXX not really specific information
+            }
+        }
+        #endif /* DOXYGEN_SHOULD_SKIP_THIS */
+
+        //! Returns redundant information about varIDs==0, in varIDs==1 and varIDs==2
+        /*! Set other varIDs of dims to be ignored to -1
+        */
+        double redundantInfo(TVector<int>& vIDs){
+            if(vIDs.Size() != nDims){
+                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
+                cerr << "Skipping this call" << endl;
+                return 0.;
+            }
+
+            TVector<int> varIDs;
+            normalizeBounds(varIDs, vIDs);
+
+            TVector<double> siX1;
+            TVector<double> siX2;
+            TVector<double> p_y;
+
+            TVector<int> varIDsX1, varIDsX2, varIDsY;
+            varIDsX1.SetBounds(1,varIDs.Size());
+            varIDsX2.SetBounds(1,varIDs.Size());
+            varIDsY.SetBounds(1,varIDs.Size());
+
+            for(int d=1; d<=varIDs.Size(); d++){
+                // spec Y
+                if(varIDs[d]==0) {
+                    varIDsY[d] = 0;
+                    varIDsX1[d] = 0;
+                    varIDsX2[d] = 0;
+                }
+                // in X1
+                if(varIDs[d]==1) {
+                    varIDsY[d] = -1;
+                    varIDsX1[d] = 1;
+                    varIDsX2[d] = -1;
+                }
+                // in X2
+                if(varIDs[d]==2) {
+                    varIDsY[d] = -1;
+                    varIDsX1[d] = -1;
+                    varIDsX2[d] = 1;
+                }
+            }
+            //cout << "varIDs " << varIDsX1 << "--" << varIDsX2 << endl;
+
+            computeIndProbs(p_y, varIDsY);
+            specificInfo(siX1,varIDsX1);
+            specificInfo(siX2,varIDsX2);
+
+            double ri = 0.0;
+
+            //
+            for (int l = 1; l <= siX1.Size(); l++)
+            {
+                ri += (siX1[l]<siX2[l]?siX1[l]:siX2[l]);
+            }
+            return ri;
+        }
+
+        //! Returns amount of unique information about varIDs==0, from varIDs==1 and not from varIDs==2
+        /*! Set other varIDs of dims to be ignored to -1
+        */
+        double uniqueInfo(TVector<int>& vIDs){
+            if(vIDs.Size() != nDims){
+                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
+                cerr << "Skipping this call" << endl;
+                return 0.;
+            }
+
+            TVector<int> varIDs;
+            normalizeBounds(varIDs, vIDs);
+
+            TVector<int> varIDsX1;
+            varIDsX1.SetBounds(1,varIDs.Size());
+
+            for(int d=1; d<=varIDs.Size(); d++){
+                // spec Y
+                if(varIDs[d]==0) {
+                    varIDsX1[d] = 0;
+                }
+                // in X1
+                if(varIDs[d]==1) {
+                    varIDsX1[d] = 1;
+                }
+                // in X2
+                if(varIDs[d]==2) {
+                    varIDsX1[d] = -1;
+                }
+            }
+
+            double infoX1 = mutualInfo(varIDsX1);
+            double redun = redundantInfo(varIDs);
+            //cout << "From unique info" << endl;
+            //cout << "Total info from " << varIDsX1 << " = " << infoX1 << endl;
+            //cout << "Redun info from " << varIDs << " = " << redun << endl;
+
+            return infoX1 - redun;
+
+        }
+
+        //! Returns amount of synergistic information about varIDs==0, in varIDs==1 and varIDs==2
+        /*! Set other varIDs of dims to be ignored to -1
+        */
+        double synergy(TVector<int>& vIDs){
+            if(vIDs.Size() != nDims){
+                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
+                cerr << "Skipping this call" << endl;
+                return 0.;
+            }
+
+            TVector<int> varIDs;
+            normalizeBounds(varIDs, vIDs);
+
+            TVector<int> varIDsX1, varIDsX2, varCommon;
+            varIDsX1.SetBounds(1,varIDs.Size());
+            varIDsX2.SetBounds(1,varIDs.Size());
+            varCommon.SetBounds(1,varIDs.Size());
+
+            for(int d=1; d<=varIDs.Size(); d++){
+                // spec Y
+                if(varIDs[d]==0) {
+                    varIDsX1[d] = 0;
+                    varIDsX2[d] = 0;
+                    varCommon[d] = 0;
+                }
+                // in X1
+                if(varIDs[d]==1) {
+                    varIDsX1[d] = 1;
+                    varIDsX2[d] = -1;
+                    varCommon[d] = 1;
+                }
+                // in X2
+                if(varIDs[d]==2) {
+                    varIDsX1[d] = -1;
+                    varIDsX2[d] = 1;
+                    varCommon[d] = 1;
+                }
+            }
+
+            double mi = mutualInfo(varCommon);
+            double infoX1 = mutualInfo(varIDsX1);
+            double infoX2 = mutualInfo(varIDsX2);
+            double redun = redundantInfo(varIDs);
+
+            double synergy = mi - infoX1 - infoX2 + redun;
+            //cout << "mutualInfo = " << mi << endl;
+            //cout << "uniqueInfoX1 = " << infoX1 - redun << endl;
+            //cout << "uniqueInfoX2 = " << infoX2 - redun << endl;
+            //cout << "redundancy = " << redun << endl;
+            //cout << "synergy = " << synergy << endl;
+
+            return synergy;
+        }
+
+
+        //! Estimates complete info decomposition in infos, returns
+        /*!     total mutual information about varIDs==0, from varIDs==1 and varIDs==2\n
+        *     unique info about varIDs==0 in varIDs==1\n
+        *     unique info about varIDs==0 in varIDs==2\n
+        *     redundant info about varIDs==0, from varIDs==1 and varIDs==2\n
+        *     synergistic info about varIDs==0, from varIDs==1 and varIDs==2\n
+        * Set other varIDs of dims to be ignored to -1
+        */
+        void pid(TVector<int>& vIDs, TVector<double>& infos){
+            if(vIDs.Size() != nDims){
+                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
+                cerr << "Skipping this call" << endl;
+                return;
+            }
+
+            TVector<int> varIDs;
+            normalizeBounds(varIDs, vIDs);
+
+            TVector<int> varIDsX1, varIDsX2, varCommon;
+            varIDsX1.SetBounds(1,varIDs.Size());
+            varIDsX2.SetBounds(1,varIDs.Size());
+            varCommon.SetBounds(1,varIDs.Size());
+
+            for(int d=1; d<=varIDs.Size(); d++){
+                // spec Y
+                if(varIDs[d]==0) {
+                    varIDsX1[d] = 0;
+                    varIDsX2[d] = 0;
+                    varCommon[d] = 1;
+                }
+                // in X1
+                if(varIDs[d]==1) {
+                    varIDsX1[d] = 1;
+                    varIDsX2[d] = -1;
+                    varCommon[d] = 0;
+                }
+                // in X2
+                if(varIDs[d]==2) {
+                    varIDsX1[d] = -1;
+                    varIDsX2[d] = 1;
+                    varCommon[d] = 0;
+                }
+            }
+
+            double mi = mutualInfo(varCommon);
+            double infoX1 = mutualInfo(varIDsX1);
+            double infoX2 = mutualInfo(varIDsX2);
+            double redun = redundantInfo(varIDs);
+
+            double synergy = mi - infoX1 - infoX2 + redun; // because redun is subtracted twice
+
+            infos.SetBounds(1,5);
+            infos[1] = mi;
+            infos[2] = infoX1 - redun; // unique X1
+            infos[3] = infoX2 - redun; // unique X2
+            infos[4] = redun;
+            infos[5] = synergy;
+        }
+
+        #ifndef DOXYGEN_SHOULD_SKIP_THIS
+        double transfer_entropy_1_delay(TVector<int> varIDs){
+            // one delay transfer entropy from varIDs==0 to varIDs==1
+            double te = 0.;
+
+            return te;
+        }
+        #endif /*  DOXYGEN_SHOULD_SKIP_THIS */
 
         /*******************
         * Utils
@@ -391,110 +860,7 @@ class InfoTools{
                 }
             }
         }
-        #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-        /*******************
-        * Data Handler
-        *******************/
-        //!Identify bin for given datapoint and add to count of points in that bin
-        /*!     dataPoint - TVector with length=dims contains the datapoint to be added
-        */
-        void addDataPoint(TVector<double>& dp){
-            // repeat for each rep
-            if(dataReadyFlag){
-                cout << "WARNING: Datapoint is being added after existing collapsing binned data. Previous datapoints will be lost." << endl;
-                cout << "All datapoints need to be added first before using any information theoretic tools" << endl;
-            }
-            if(dp.Size() != nDims){
-                cerr << "Each datapoint must be of size = total dimensionality = " << nDims << endl;
-                cerr << "Skipping this datapoint" << endl;
-                return;
-            }
-
-            // renormalizing bounds
-            TVector<double> dataPoint;
-            normalizeBounds(dataPoint, dp);
-
-            dataReadyFlag = 0;
-            totalPoints++;
-            // locate bin and update counts
-            // may need to do for several bin lists depending on shiftedFlag
-            //cout << "addDataPoint " << endl;
-            //cout << "dataInitedFlag " << dataInitedFlag << endl;
-            if(!dataInitedFlag){
-                //cout << "initing data" << endl;
-                for(int r=1; r<=nReps; r++){
-                    binnedData[r].SetBounds(1,BIN_LIMIT,1,nDims+1);
-                    binnedData[r].FillContents(0);
-                }
-                dataInitedFlag = 1;
-            }
-
-            // bin for this dataPoint
-            TVector<double> this_bin;
-            this_bin.SetBounds(1,nDims);
-            this_bin.FillContents(0);
-
-            //cout << "locating bin " << binSizes << endl;
-            // for each rep
-            for(int r=1; r<=nReps; r++){
-                // for each dimension
-                this_bin.FillContents(0);
-                int valid_dBins=0;
-                for(int d=1; d<=nDims; d++){
-                    // for each bin
-                    for(int b=1; b<=nBins[d]; b++){
-                        //cout << bins[r][d][b] << " " << dataPoint[d] << " " << bins[r][d][b]+binSizes[d] << " " ;
-                        //cout << (bins[r][d][b] <= dataPoint[d] && dataPoint[d] < bins[r][d][b]+binSizes[d]) << endl;
-                        if(b == nBins[d]){
-                            // just for the last bin check both margins
-                            if(bins[r][d][b] <= dataPoint[d] && dataPoint[d] <= bins[r][d][b]+binSizes[d]){
-                                // found bin for particular d
-                                //cout << "dim" << d << " ";
-                                valid_dBins += 1;
-                                this_bin[d] = b;
-                                break;
-                            }
-                        }
-                        else{
-                            //for all other bins, check only left margin
-                            if(bins[r][d][b] <= dataPoint[d] && dataPoint[d] < bins[r][d][b]+binSizes[d]){
-                                // found bin for particular d
-                                //cout << "dim" << d << " ";
-                                valid_dBins += 1;
-                                this_bin[d] = b;
-                                break;
-                            }
-                        }
-                    }
-                }
-                //cout << "valid_dBins=" << valid_dBins << endl;
-                if(valid_dBins == nDims){
-                    int added = 0;
-                    // increment or insert this_bin at binnedData[r][data_len,:]
-                    //cout << "nRep = " << r << endl;
-                    added = addOrInsertCoords(this_bin,binnedData[r]);
-                    if(added==1){
-                        dataLen++;
-                    }
-                    //cout << added << " " << dataLen << " " << binnedData[r].ColumnSize() << endl;
-                    //cout << "Before finishing " << r << endl;
-                }
-            }
-
-            //cout << "Finished adding point" << endl << endl;
-            //cout << "Data Length = " << dataLen << " Total Points = " << totalPoints << endl;
-        }
-
-        //! Add list of points at a time
-        /*     data - TVector with length=number of points, each point being TVector with length=dims
-        */
-        void addData(TVector<TVector<double> >& data){
-            for(int d=1; d<=data.Size(); d++)
-                addDataPoint(data[d]);
-        }
-
-        #ifndef DOXYGEN_SHOULD_SKIP_THIS
         void collapseBinnedData(){
             // After adding all points, before using any infotheory tools,
             // estimate average shifted bin counts here and
@@ -904,310 +1270,4 @@ class InfoTools{
         */
         #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-        /*******************
-        * Information tools
-        *******************/
-        //!Returns entropy of var along dims with varIDs==0
-        /*!Example:
-        if dims = 4, 4D datapoints will be added, but if only the first 2 dimensions make up the variable of interest, then set
-        varIDs[1] = 1; varIDs[2] = 1; varIDs[3] = -1; varIDs[4] = -1\n
-        The dims with varID==-1 will be ignored
-        */
-        double entropy(TVector<int>& vIDs){
-            if(vIDs.Size() != nDims){
-                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
-                cerr << "Skipping this call" << endl;
-                return 0.;
-            }
-
-            TVector<int> varIDs;
-            normalizeBounds(varIDs, vIDs);
-
-            double entropy = 0.;
-            TVector<double> p_x;
-            computeIndProbs(p_x,varIDs);
-
-            // iterate over all x values
-            for(int xi=1; xi<=p_x.Size(); xi++){
-                if(p_x[xi] > 0)
-                    entropy -= p_x[xi]*log2(p_x[xi]);
-            }
-            return entropy;
-        }
-
-        //! Return mutual information between vars along dims varIDs==0 and varIDs==1
-        /*! Set other varIDs of dims to be ignored to -1
-        */
-        double mutualInfo(TVector<int>& vIDs){
-            if(vIDs.Size() != nDims){
-                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
-                cerr << "Skipping this call" << endl;
-                return 0.;
-            }
-
-            TVector<int> varIDs;
-            normalizeBounds(varIDs, vIDs);
-
-            // computer probabilities given the var IDs
-            TMatrix<double> p_xy;
-            computeJointProbs(p_xy,varIDs);
-
-            //cout << "From mutualInfo"<< endl << p_xy << endl;
-
-            double mi = 0.0;
-            // parse through each unique data point
-            for (int i = 1; i <= p_xy.ColumnSize(); i++)
-            {
-                mi += p_xy[i][3]*log2(p_xy[i][3]/(p_xy[i][1]*p_xy[i][2]));
-                //cout << "from mi = " << p_xy[i][3]*log2(p_xy[i][3]/(p_xy[i][1]*p_xy[i][2])) << endl;
-            }
-            return mi;
-        }
-
-        #ifndef DOXYGEN_SHOULD_SKIP_THIS
-        void specificInfo(TVector<double>& si, TVector<int>& varIDs){
-            // specific info for var values identified by varIDs==0, in si
-
-            // ID 0 is the one we want specific information about
-            TVector<TVector<TVector<double> > > px;
-            //cout << "in specific info " << endl;
-            computeSpecProbs(px, varIDs);
-            //cout << " Back in spec info " << endl;
-
-            si.SetBounds(1,px.Size());
-
-            for (int x = 1; x <= px.Size(); x++)
-            {
-                si[x] = 0.0;
-                for (int y = 1; y <= px[x][2].Size(); y++)
-                {
-                    si[x] += px[x][3][y] * log2(px[x][3][y] / (px[x][1][1] * px[x][2][y]));
-                    //cout << px[x][1][1] << " " << px[x][2][y] << " " << px[x][3][y] << " " << px[x][3][y] * log2( px[x][3][y] / (px[x][1][1] * px[x][2][y])) << endl;
-                }
-                //si[x]=si[x]/px[x][1][1]; //XXX not really specific information
-            }
-        }
-        #endif /* DOXYGEN_SHOULD_SKIP_THIS */
-
-        //! Returns redundant information about varIDs==0, in varIDs==1 and varIDs==2
-        /*! Set other varIDs of dims to be ignored to -1
-        */
-        double redundantInfo(TVector<int>& vIDs){
-            if(vIDs.Size() != nDims){
-                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
-                cerr << "Skipping this call" << endl;
-                return 0.;
-            }
-
-            TVector<int> varIDs;
-            normalizeBounds(varIDs, vIDs);
-
-            TVector<double> siX1;
-            TVector<double> siX2;
-            TVector<double> p_y;
-
-            TVector<int> varIDsX1, varIDsX2, varIDsY;
-            varIDsX1.SetBounds(1,varIDs.Size());
-            varIDsX2.SetBounds(1,varIDs.Size());
-            varIDsY.SetBounds(1,varIDs.Size());
-
-            for(int d=1; d<=varIDs.Size(); d++){
-                // spec Y
-                if(varIDs[d]==0) {
-                    varIDsY[d] = 0;
-                    varIDsX1[d] = 0;
-                    varIDsX2[d] = 0;
-                }
-                // in X1
-                if(varIDs[d]==1) {
-                    varIDsY[d] = -1;
-                    varIDsX1[d] = 1;
-                    varIDsX2[d] = -1;
-                }
-                // in X2
-                if(varIDs[d]==2) {
-                    varIDsY[d] = -1;
-                    varIDsX1[d] = -1;
-                    varIDsX2[d] = 1;
-                }
-            }
-            //cout << "varIDs " << varIDsX1 << "--" << varIDsX2 << endl;
-
-            computeIndProbs(p_y, varIDsY);
-            specificInfo(siX1,varIDsX1);
-            specificInfo(siX2,varIDsX2);
-
-            double ri = 0.0;
-
-            //
-            for (int l = 1; l <= siX1.Size(); l++)
-            {
-                ri += (siX1[l]<siX2[l]?siX1[l]:siX2[l]);
-            }
-            return ri;
-        }
-
-        //! Returns amount of unique information about varIDs==0, from varIDs==1 and not from varIDs==2
-        /*! Set other varIDs of dims to be ignored to -1
-        */
-        double uniqueInfo(TVector<int>& vIDs){
-            if(vIDs.Size() != nDims){
-                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
-                cerr << "Skipping this call" << endl;
-                return 0.;
-            }
-
-            TVector<int> varIDs;
-            normalizeBounds(varIDs, vIDs);
-
-            TVector<int> varIDsX1;
-            varIDsX1.SetBounds(1,varIDs.Size());
-
-            for(int d=1; d<=varIDs.Size(); d++){
-                // spec Y
-                if(varIDs[d]==0) {
-                    varIDsX1[d] = 0;
-                }
-                // in X1
-                if(varIDs[d]==1) {
-                    varIDsX1[d] = 1;
-                }
-                // in X2
-                if(varIDs[d]==2) {
-                    varIDsX1[d] = -1;
-                }
-            }
-
-            double infoX1 = mutualInfo(varIDsX1);
-            double redun = redundantInfo(varIDs);
-            //cout << "From unique info" << endl;
-            //cout << "Total info from " << varIDsX1 << " = " << infoX1 << endl;
-            //cout << "Redun info from " << varIDs << " = " << redun << endl;
-
-            return infoX1 - redun;
-
-        }
-
-        //! Returns amount of synergistic information about varIDs==0, in varIDs==1 and varIDs==2
-        /*! Set other varIDs of dims to be ignored to -1
-        */
-        double synergy(TVector<int>& vIDs){
-            if(vIDs.Size() != nDims){
-                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
-                cerr << "Skipping this call" << endl;
-                return 0.;
-            }
-
-            TVector<int> varIDs;
-            normalizeBounds(varIDs, vIDs);
-
-            TVector<int> varIDsX1, varIDsX2, varCommon;
-            varIDsX1.SetBounds(1,varIDs.Size());
-            varIDsX2.SetBounds(1,varIDs.Size());
-            varCommon.SetBounds(1,varIDs.Size());
-
-            for(int d=1; d<=varIDs.Size(); d++){
-                // spec Y
-                if(varIDs[d]==0) {
-                    varIDsX1[d] = 0;
-                    varIDsX2[d] = 0;
-                    varCommon[d] = 0;
-                }
-                // in X1
-                if(varIDs[d]==1) {
-                    varIDsX1[d] = 1;
-                    varIDsX2[d] = -1;
-                    varCommon[d] = 1;
-                }
-                // in X2
-                if(varIDs[d]==2) {
-                    varIDsX1[d] = -1;
-                    varIDsX2[d] = 1;
-                    varCommon[d] = 1;
-                }
-            }
-
-            double mi = mutualInfo(varCommon);
-            double infoX1 = mutualInfo(varIDsX1);
-            double infoX2 = mutualInfo(varIDsX2);
-            double redun = redundantInfo(varIDs);
-
-            double synergy = mi - infoX1 - infoX2 + redun;
-            //cout << "mutualInfo = " << mi << endl;
-            //cout << "uniqueInfoX1 = " << infoX1 - redun << endl;
-            //cout << "uniqueInfoX2 = " << infoX2 - redun << endl;
-            //cout << "redundancy = " << redun << endl;
-            //cout << "synergy = " << synergy << endl;
-
-            return synergy;
-        }
-
-
-        //! Estimates complete info decomposition in infos, returns
-        /*!     total mutual information about varIDs==0, from varIDs==1 and varIDs==2\n
-        *     unique info about varIDs==0 in varIDs==1\n
-        *     unique info about varIDs==0 in varIDs==2\n
-        *     redundant info about varIDs==0, from varIDs==1 and varIDs==2\n
-        *     synergistic info about varIDs==0, from varIDs==1 and varIDs==2\n
-        * Set other varIDs of dims to be ignored to -1
-        */
-        void pid(TVector<int>& vIDs, TVector<double>& infos){
-            if(vIDs.Size() != nDims){
-                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
-                cerr << "Skipping this call" << endl;
-                return;
-            }
-
-            TVector<int> varIDs;
-            normalizeBounds(varIDs, vIDs);
-
-            TVector<int> varIDsX1, varIDsX2, varCommon;
-            varIDsX1.SetBounds(1,varIDs.Size());
-            varIDsX2.SetBounds(1,varIDs.Size());
-            varCommon.SetBounds(1,varIDs.Size());
-
-            for(int d=1; d<=varIDs.Size(); d++){
-                // spec Y
-                if(varIDs[d]==0) {
-                    varIDsX1[d] = 0;
-                    varIDsX2[d] = 0;
-                    varCommon[d] = 1;
-                }
-                // in X1
-                if(varIDs[d]==1) {
-                    varIDsX1[d] = 1;
-                    varIDsX2[d] = -1;
-                    varCommon[d] = 0;
-                }
-                // in X2
-                if(varIDs[d]==2) {
-                    varIDsX1[d] = -1;
-                    varIDsX2[d] = 1;
-                    varCommon[d] = 0;
-                }
-            }
-
-            double mi = mutualInfo(varCommon);
-            double infoX1 = mutualInfo(varIDsX1);
-            double infoX2 = mutualInfo(varIDsX2);
-            double redun = redundantInfo(varIDs);
-
-            double synergy = mi - infoX1 - infoX2 + redun; // because redun is subtracted twice
-
-            infos.SetBounds(1,5);
-            infos[1] = mi;
-            infos[2] = infoX1 - redun; // unique X1
-            infos[3] = infoX2 - redun; // unique X2
-            infos[4] = redun;
-            infos[5] = synergy;
-        }
-
-        #ifndef DOXYGEN_SHOULD_SKIP_THIS
-        double transfer_entropy_1_delay(TVector<int> varIDs){
-            // one delay transfer entropy from varIDs==0 to varIDs==1
-            double te = 0.;
-
-            return te;
-        }
-        #endif /*  DOXYGEN_SHOULD_SKIP_THIS */
 };

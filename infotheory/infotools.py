@@ -14,22 +14,20 @@ import os
 import glob
 from ctypes import cdll, c_void_p, c_int, py_object, py_object, c_double
 
-__version__ = "1.0"
+__version__ = "1.1"
 class InfoTools(object):
     """ Python Wrapper class for InfoTools.h
 
     This class loads the .so file from the compiled InfoTools.h that allows functions written in C++ to be called from Python. Create and object of this class to call associated functions.
     """
-    def __init__(self, dims, nreps, nbins, mins, maxs):
+    def __init__(self, dims, nreps=0):
         """ reads in .so file and creates object of InfoTools cpp class
 
         ARGS
         dims: (int) total dimensionality of all variables
         nreps: (int) number of shifted binnings over which data is binned and averaged
-        nbins: (list-like, size=dims) number of bins along each dimension of the data
-        mins: (list-like, size=dims) min value or left edge of binning for each dimension
-        maxs: (list-like, size=dims) max value or right edge of binning for each dimension
         """
+        self.dims = dims
         dll_dir = '/'.join(os.path.dirname(__file__).split('/')[:-1])
         dll_file = glob.glob(os.path.join(dll_dir,"infotheoryClass*.so"))[0]
         self.libc = cdll.LoadLibrary(dll_file)
@@ -39,10 +37,6 @@ class InfoTools(object):
         class_ctor_wrapper.argtypes = [c_int, c_int]
         class_ctor_wrapper.restype = c_void_p
         self._obj = c_void_p(class_ctor_wrapper(dims, nreps))
-
-        # config
-        self._set_bin_counts(nbins)
-        self._set_data_ranges(mins, maxs)
 
     #****************
     # Inspection utils
@@ -60,20 +54,40 @@ class InfoTools(object):
         displaySnapshot_wrapper(self._obj)
 
     #****************
+    # Binning methods
+    #****************
+    def set_equal_interval_binning(self, nbins, mins, maxs):
+        """ set binning mode to be equal interval binning
+
+        ARGS
+        nbins: (list,length=dims) list with the number of bins along each dimension
+        mins: (list,length=dims) list with the minimum values along each dimension
+        maxs: (list,length=dims) list with the maximum values along each dimension
+        """
+        setEqualIntervalBinning_wrapper = self.libc.setEqualIntervalBinning_c_wrapper
+        setEqualIntervalBinning_wrapper.argtypes = [c_void_p, py_object, py_object, py_object]
+        setEqualIntervalBinning_wrapper(self._obj, list(nbins), list(mins), list(maxs))
+
+    def set_bin_boundaries(self, boundaries, dim_index=None):
+        """ set the left margin of each bin for each dimension
+
+        ARGS
+        boundaries: a list with a list of bin-margins for each dimension OR a list for just one dimension with dimension specified in dim_index.\n
+                Length of list = number_of_bins-1, left most bin is (-inf,list[0]) and right most bin is (list[-1],inf)
+        dim_index: (int, default=None) denoting the dimension for which the bins are being set, if boundaries is a single list of boundaries
+        """
+        set_bin_boundaries_wrapper = self.libc.setBinBoundaries_c_wrapper
+        set_bin_boundaries_wrapper.argtypes = [c_void_p, py_object, c_int]
+        if dim_index:
+            set_bin_boundaries_wrapper(self._obj, list(boundaries), int(dim_index))
+        else:
+            assert len(boundaries)==self.dims, f"ERROR: boundaries should be a list of length = total dimensionality = {self.dims}, or provide dim_index"
+            for dim_ind, boundary_list in enumerate(boundaries):
+                set_bin_boundaries_wrapper(self._obj, list(boundary_list), int(dim_ind))
+
+    #****************
     # Data handlers
     #****************
-    def _set_bin_counts(self, nbins):
-        """ (internal use only) set the number of bins along each dimension"""
-        setBinCounts_wrapper = self.libc.setBinCounts_c_wrapper
-        setBinCounts_wrapper.argtypes = [c_void_p, py_object]
-        setBinCounts_wrapper(self._obj, list(nbins))
-
-    def _set_data_ranges(self, mins, maxs):
-        """ (internal use only) set min and max for each dimension """
-        setDataRanges_wrapper = self.libc.setDataRanges_c_wrapper
-        setDataRanges_wrapper.argtypes = [c_void_p, py_object, py_object]
-        setDataRanges_wrapper(self._obj, list(mins), list(maxs))
-
     def add_data_point(self, datapoint):
         """ add one data point to analyses
 
