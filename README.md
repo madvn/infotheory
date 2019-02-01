@@ -1,6 +1,6 @@
-## Website and docs
+<!-- ## Website and docs-->
 
-https://madvn.github.io/infotheory/
+<!-- https://madvn.github.io/infotheory/ -->
 
 ## Introduction
 
