@@ -9,7 +9,7 @@ license = 'LICENSE'
 
 long_description = """## Website and docs
 
-https://pages.github.iu.edu/madcanda/Infotheory/"""
+https://github.com/madvn/infotheory"""
 
 # MacOS
 # export CXXFLAGS="-mmacosx-version-min=10.9"
