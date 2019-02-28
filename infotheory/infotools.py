@@ -81,7 +81,7 @@ class InfoTools(object):
         if dim_index:
             set_bin_boundaries_wrapper(self._obj, list(boundaries), int(dim_index))
         else:
-            assert len(boundaries)==self.dims, f"ERROR: boundaries should be a list of length = total dimensionality = {self.dims}, or provide dim_index"
+            assert len(boundaries)==self.dims, "ERROR: boundaries should be a list of length = total dimensionality = {}, or provide dim_index".format(self.dims)
             for dim_ind, boundary_list in enumerate(boundaries):
                 set_bin_boundaries_wrapper(self._obj, list(boundary_list), int(dim_ind))
 
