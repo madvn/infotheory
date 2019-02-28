@@ -14,7 +14,7 @@ import os
 import glob
 from ctypes import cdll, c_void_p, c_int, py_object, py_object, c_double
 
-__version__ = "1.1"
+__version__ = "1.1.1"
 class InfoTools(object):
     """ Python Wrapper class for InfoTools.h
 
