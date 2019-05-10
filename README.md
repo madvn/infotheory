@@ -36,9 +36,9 @@ Using this package in your own code involves three steps.
 <img src="https://github.com/madvn/infotheory/blob/master/demos/usage_icons.png" width="480">
 </p>
 
-See [demos](https://github.com/madvn/infotheory/tree/master/demos) and [website](https://madvn.github.io/infotheory/) for sample programs on how to use this package.
+See [demos](https://github.com/madvn/infotheory/tree/master/demos) and [website](http://mcandadai/infotheory/) for sample programs on how to use this package.
 
-See colab demo [here](https://colab.research.google.com/drive/1Pu0QIS7bsx8AjVXRIuAxPdbifkBFToLu)
+See colab demo [here](https://colab.research.google.com/drive/1SXIVKitdDY5Mc5O3XLb_OKDBhFzQco2g)
 
 ## Contact
 
