@@ -15,11 +15,14 @@ import glob
 from ctypes import cdll, c_void_p, c_int, py_object, py_object, c_double
 
 __version__ = "1.1.1"
+
+
 class InfoTools(object):
     """ Python Wrapper class for InfoTools.h
 
     This class loads the .so file from the compiled InfoTools.h that allows functions written in C++ to be called from Python. Create and object of this class to call associated functions.
     """
+
     def __init__(self, dims, nreps=0):
         """ reads in .so file and creates object of InfoTools cpp class
 
@@ -28,8 +31,8 @@ class InfoTools(object):
         nreps: (int) number of shifted binnings over which data is binned and averaged
         """
         self.dims = dims
-        dll_dir = '/'.join(os.path.dirname(__file__).split('/')[:-1])
-        dll_file = glob.glob(os.path.join(dll_dir,"infotheoryClass*.so"))[0]
+        dll_dir = "/".join(os.path.dirname(__file__).split("/")[:-1])
+        dll_file = glob.glob(os.path.join(dll_dir, "infotheoryClass*.so"))[0]
         self.libc = cdll.LoadLibrary(dll_file)
 
         # creating object of cpp class
@@ -38,9 +41,9 @@ class InfoTools(object):
         class_ctor_wrapper.restype = c_void_p
         self._obj = c_void_p(class_ctor_wrapper(dims, nreps))
 
-    #****************
+    # ****************
     # Inspection utils
-    #****************
+    # ****************
     def display_config(self):
         """ Display the config for analyses such as number of bins, dimensionality etc. """
         displayConfig_wrapper = self.libc.displayConfig_c_wrapper
@@ -53,9 +56,9 @@ class InfoTools(object):
         displaySnapshot_wrapper.argtypes = [c_void_p]
         displaySnapshot_wrapper(self._obj)
 
-    #****************
+    # ****************
     # Binning methods
-    #****************
+    # ****************
     def set_equal_interval_binning(self, nbins, mins, maxs):
         """ set binning mode to be equal interval binning
 
@@ -65,7 +68,12 @@ class InfoTools(object):
         maxs: (list,length=dims) list with the maximum values along each dimension
         """
         setEqualIntervalBinning_wrapper = self.libc.setEqualIntervalBinning_c_wrapper
-        setEqualIntervalBinning_wrapper.argtypes = [c_void_p, py_object, py_object, py_object]
+        setEqualIntervalBinning_wrapper.argtypes = [
+            c_void_p,
+            py_object,
+            py_object,
+            py_object,
+        ]
         setEqualIntervalBinning_wrapper(self._obj, list(nbins), list(mins), list(maxs))
 
     def set_bin_boundaries(self, boundaries, dim_index=None):
@@ -81,13 +89,17 @@ class InfoTools(object):
         if dim_index:
             set_bin_boundaries_wrapper(self._obj, list(boundaries), int(dim_index))
         else:
-            assert len(boundaries)==self.dims, "ERROR: boundaries should be a list of length = total dimensionality = {}, or provide dim_index".format(self.dims)
+            assert (
+                len(boundaries) == self.dims
+            ), "ERROR: boundaries should be a list of length = total dimensionality = {}, or provide dim_index".format(
+                self.dims
+            )
             for dim_ind, boundary_list in enumerate(boundaries):
                 set_bin_boundaries_wrapper(self._obj, list(boundary_list), int(dim_ind))
 
-    #****************
+    # ****************
     # Data handlers
-    #****************
+    # ****************
     def add_data_point(self, datapoint):
         """ add one data point to analyses
 
@@ -123,9 +135,9 @@ class InfoTools(object):
         delete_ptr_wrapper.restype = c_void_p
         delete_ptr_wrapper(self._obj)
 
-    #****************
+    # ****************
     # Info theory tools
-    #****************
+    # ****************
     def entropy(self, var_IDs):
         """ Compute entropy of random vars given by varIDs==0
 
