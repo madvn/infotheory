@@ -1,6 +1,6 @@
-<!-- ## Website and docs-->
+# Infotheory [![Build Status](https://travis-ci.org/madvn/infotheory.svg?branch=master)](https://travis-ci.org/madvn/infotheory)
 
-<!-- https://madvn.github.io/infotheory/ -->
+Website: [http://mcandadai.com/infotheory/](http://mcandadai.com/infotheory/)
 
 ## Introduction
 
