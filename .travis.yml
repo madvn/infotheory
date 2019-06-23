@@ -3,3 +3,4 @@ python:
   - "3.6"
 install:
 - pip install -v .
+script: cd tests;python tests.py
