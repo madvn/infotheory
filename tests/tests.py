@@ -20,6 +20,7 @@ FAILED = bcolors.FAIL + "FAILED" + bcolors.ENDC
 def _except(e):
     print("\n" + FAILED)
     print(e)
+    exit(1)
 
 
 def pid_test(dims, nreps, nbins, data_ranges, data):
