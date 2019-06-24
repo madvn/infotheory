@@ -14,6 +14,7 @@ The following information theoretic quantities can be estimated using this tool 
    - Unique Information
    - Redundant Information
    - Synergistic Information
+4. Transfer Entropy = Unique + Synergistic Information [5]
 
 The package can be used in Python or C++. While the C++ headers should function well on all platforms, the python package has currently only been tested on MacOS and Linux.
 
@@ -51,4 +52,5 @@ Created by Madhavun Candadai and Eduardo J. Izquierdo. Contact Madhavun at madvn
     <li id="scholarpedia:Shannon_entropy"><a href="http://www.scholarpedia.org/article/Entropy#Shannon_entropy" target="_blank"> http://www.scholarpedia.org/article/Entropy#Shannon_entropy</a></li>
     <li id="scholarpedia:Mutual_information"><a href="http://www.scholarpedia.org/article/Mutual_information" target="_blank"> http://www.scholarpedia.org/article/Mutual_information</a></li>
     <li id="williams:2010">Williams, P. L., & Beer, R. D. (2010). Nonnegative decomposition of multivariate information. arXiv preprint arXiv:1004.2515.</li>
+    <li id="williams:2011">Williams, P. L. and Beer, R. D.  Generalized measures of information transfer. arXiv preprint arXiv:1102.1507, 2011.</li>
 </ol>
