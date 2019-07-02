@@ -300,9 +300,9 @@ def test_binning(dims, nreps, nbins, data_ranges):
         point2 = point1 + (np.random.rand() / 30)
         datapoints.append([point1, point2])
 
+    # Equal interval binning
     try:
         print("Estimating MI using equal interval binning = ", end="", flush=True)
-        # Equal interval binning
         it = infotheory.InfoTools(dims, nreps)
 
         # set bin boundaries
@@ -317,9 +317,9 @@ def test_binning(dims, nreps, nbins, data_ranges):
     except Exception as e:
         _except(e)
 
+    # Manual binning
     try:
         print("Estimating MI using manually specified binning = ", end="", flush=True)
-        # Manual binning
         it = infotheory.InfoTools(dims, nreps)
 
         # set bin boundaries
@@ -336,7 +336,7 @@ def test_binning(dims, nreps, nbins, data_ranges):
 
     # mi_eq == mi_mb?
     if mi_eq is not None and mi_mb is not None:
-        if np.round(mi_eq, decimals=4) == np.round(mi_mb, decimals=4):
+        if np.round(mi_eq, decimals=3) == np.round(mi_mb, decimals=3):
             print("Both methods gave same result ", SUCCESS)
         else:
             _except(
