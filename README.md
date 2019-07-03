@@ -6,19 +6,30 @@ Website: [http://mcandadai.com/infotheory/](http://mcandadai.com/infotheory/)
 
 ## Introduction
 
-Infotheory, written in C++, is a software package to perform information theoretic analysis, especially on high-dimensional data. While inferring the data distribution from samples, we've utilized sparse representations thus avoiding the catastrophic explosion of bin counts with increased dimensions. Moreover, this package enables better distribution estimation by employing averaged shifted histograms [1].
+Infotheory, written in C++, and usable in Python as well, is a software package to perform information theoretic analysis on multivariate data. This package implements traditional as well as more recent measures that arise from multivariate extensions to information theory, specifically
 
-The following information theoretic quantities can be estimated using this tool as of now and follow this repo for more to come.
+<ol class="ml-25">
+   <li>Entropy <a href="#scholarpedia:Shannon_entropy">[1]</a></li>
+   <li>Mutual Information <a href="#scholarpedia:Mutual_information">[2]</a></li>
+   <li>Partial Information Decomposition <a href="#williams:2010">[3]</a>
+       <ul class="ml-25" style="margin-bottom:0px;">
+           <li>Unique Information</li>
+           <li>Redundant Information</li>
+           <li>Synergistic Information</li>
+       </ul></li>
+</ol>
 
-1. Entropy [2]
-2. Mutual Information [3]
-3. Partial Information Decomposition measures [4]
-   - Unique Information
-   - Redundant Information
-   - Synergistic Information
-4. Transfer Entropy = Unique + Synergistic Information [5]
+The main highlights of this package include:
+<ul class="ml-25">
+   <li>being written in C++ for efficiency</li>
+   <li>ease of use via python bindings and compatibility with numpy</li>
+   <li>an API that allows adding the data once to then be able to perform various analyses across different sub-spaces of the dataset very quickly</li>
+   <li>use of sparse data structures that work well with high-dimensional data</li>
+   <li>user-controllable estimation of data distribution using averaged shifted histograms <a href="#scott:1985">[4]</a></li>
+   <li>flexibilty to specify binning allows proper estimation of information measures between continuous and discrete variables</li>
+</ul>
 
-The package can be used in Python or C++. While the C++ headers should function well on all platforms, the python package has currently only been tested on MacOS and Linux.
+The package can be used in Python or C++. While the C++ headers should function well on all platforms, the python package has currently been tested on MacOS and Linux.
 
 ## Installation
 
@@ -33,26 +44,23 @@ For C++, simply download [InfoTools.h](https://github.com/madvn/infotheory/blob/
 
 ## Usage
 
-Using this package in your own code involves three steps.
+Using this package in your own code involves the following steps.
 
 <p align="center">
 <img src="https://github.com/madvn/infotheory/blob/master/demos/usage_icons.png" width="480">
 </p>
 
-See [demos](https://github.com/madvn/infotheory/tree/master/demos) and [website](http://mcandadai/infotheory/) for sample programs on how to use this package.
-
-See colab demo [here](https://colab.research.google.com/drive/1SXIVKitdDY5Mc5O3XLb_OKDBhFzQco2g)
+See [demos](https://github.com/madvn/infotheory/tree/master/demos/python) and [website](http://mcandadai/infotheory/) for sample programs on how to use this package.
 
 ## Contact
 
 Created by Madhavun Candadai and Eduardo J. Izquierdo. Contact Madhavun at madvncv[at]gmail.com
 
 ## References
-
-<ol>
-    <li id="scott:1985">Scott, D. W. (1985). Averaged shifted histograms: effective nonparametric density estimators in several dimensions. The Annals of Statistics, 1024-1040.</li>
+<ol class="ml-25">
     <li id="scholarpedia:Shannon_entropy"><a href="http://www.scholarpedia.org/article/Entropy#Shannon_entropy" target="_blank"> http://www.scholarpedia.org/article/Entropy#Shannon_entropy</a></li>
     <li id="scholarpedia:Mutual_information"><a href="http://www.scholarpedia.org/article/Mutual_information" target="_blank"> http://www.scholarpedia.org/article/Mutual_information</a></li>
     <li id="williams:2010">Williams, P. L., & Beer, R. D. (2010). Nonnegative decomposition of multivariate information. arXiv preprint arXiv:1004.2515.</li>
-    <li id="williams:2011">Williams, P. L. and Beer, R. D.  Generalized measures of information transfer. arXiv preprint arXiv:1102.1507, 2011.</li>
+    <li id="scott:1985">Scott, D. W. (1985). Averaged shifted histograms: effective nonparametric density estimators in several dimensions. The Annals of Statistics, 1024-1040.</li>
+    <li id="timme:2014">Timme, N., Alford, W., Flecker, B., & Beggs, J. M. (2014). Synergy, redundancy, and multivariate information measures: an experimentalist’s perspective. Journal of computational neuroscience, 36(2), 119-140.</li>
 </ol>
