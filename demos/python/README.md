@@ -1,6 +1,7 @@
 #### mutual_info.py
 
 Output:
+        
         Mutual information between the two random 2D data = 0.3303
         Mutual information between first dimension of two random 2D data = 0.0308
 
@@ -14,6 +15,7 @@ Output:
 #### synergy.py
 
 Output:
+
         ************************ CONFIG ************************
         Total dimensionality = 3
         Number of shifted bins = 1
