@@ -45,6 +45,6 @@ Altogether, ``infotheory`` provides an easy-to-use and flexible tool to performi
 
 # Acknowledgements
 
-The work in this paper was supported in part by NSF grant No. IIS-1524647. M.C. was funded by an assistantship from the Program in Cognitive Science. The authors would like to thank Randall Beer for VectorMatrix, the C++ vector libraries used in this package.
+The work in this paper was supported in part by NSF grant No. IIS-1524647. M.C. was funded by an assistantship from the Program in Cognitive Science, Indiana University, Bloomington. The authors would like to thank Randall Beer for VectorMatrix, the C++ vector libraries used in this package.
 
 # References
