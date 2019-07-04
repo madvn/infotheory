@@ -1,5 +1,5 @@
 ---
-title: 'Infotheory: A C++/Python package for multivariate information theoretic analysis'
+title: 'infotheory: A C++/Python package for multivariate information theoretic analysis'
 tags:
   - Python
   - C++
