@@ -71,6 +71,7 @@ plt.subplot(312)
 plt.ylabel("Recorded\ndata")
 plt.subplot(313)
 plt.ylabel("Mutual\ninformation")
+plt.xlabel("time")
 
 plt.tight_layout()
 plt.savefig("./mutual_info_t.png")
