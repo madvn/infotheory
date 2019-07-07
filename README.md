@@ -4,6 +4,8 @@
 
 Website: [http://mcandadai.com/infotheory/](http://mcandadai.com/infotheory/)
 
+If you use this package, please cite preprint available at: [https://arxiv.org/abs/1907.02339](https://arxiv.org/abs/1907.02339)
+
 ## Introduction
 
 Infotheory, written in C++, and usable in Python as well, is a software package to perform information theoretic analysis on multivariate data. This package implements traditional as well as more recent measures that arise from multivariate extensions to information theory, specifically
