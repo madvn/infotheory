@@ -10,10 +10,10 @@ tags:
   - partial information decomposition
 authors:
   - name: Madhavun Candadai
-    orcid: https://orcid.org/0000-0002-9254-8641
+    orcid: 0000-0002-9254-8641
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
   - name: Eduardo J. Izquierdo
-    orcid: https://orcid.org/0000-0002-2008-290X
+    orcid: 0000-0002-2008-290X
     affiliation: "1, 2"
 affiliations:
  - name: Program in Cognitive Science, Indiana University, Bloomington, IN, U.S.A.
