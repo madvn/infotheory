@@ -56,7 +56,11 @@ See [demos](https://github.com/madvn/infotheory/tree/master/demos/python) and [w
 
 ## Contact
 
-Created by Madhavun Candadai and Eduardo J. Izquierdo. Contact Madhavun at madvncv[at]gmail.com
+Created by Madhavun Candadai and Eduardo J. Izquierdo. If you have questions or if you've found a bug, please file an issue or feel free to contact Madhavun at madvncv[at]gmail.com
+
+## Contribution
+
+If you'd like a feature to be added to `infotheory`, please file an issue. Or, better yet, open a pull request. We'll work with you to ensure that all pull requests are in a mergable state.
 
 ## References
 <ol class="ml-25">
