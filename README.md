@@ -31,6 +31,8 @@ The main highlights of this package include:
 
 The package can be used in Python or C++. While the C++ headers should function well on all platforms, the python package has currently been tested on MacOS and Linux.
 
+## Citing
+
 If you use this package, please cite preprint available at: [https://arxiv.org/abs/1907.02339](https://arxiv.org/abs/1907.02339)
 
 Candadai, M., & Izquierdo, E. J. (2019). infotheory: A C++/Python package for multivariate information theoretic analysis. arXiv preprint arXiv:1907.02339.
