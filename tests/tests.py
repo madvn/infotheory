@@ -23,7 +23,85 @@ def _except(e):
     exit(1)
 
 
-def pid_test(dims, nreps, nbins, data_ranges, data):
+def do_matching(base_str, result, target, name, decimals=5):
+    result = np.round(result, decimals=decimals)
+    target = np.round(target, decimals=decimals)
+    if result == target:
+        print(base_str, name, result, target, SUCCESS)
+    else:
+        raise Exception(
+            "{} not equal to expected value. Expected = {}, Actual = {}".format(
+                name, target, result
+            )
+        )
+
+
+def decomposition_equivalence_4D(dims, nreps, nbins, data_ranges, data):
+    try:
+        # creating the object and adding data
+        it_par = infotheory.InfoTools(dims, nreps)
+        it_par.set_equal_interval_binning(nbins, data_ranges[0], data_ranges[1])
+        it_par.add_data(data)
+
+        # PID-ing
+        total_mi = it_par.mutual_info([1, 1, 1, 0])
+        redundant_info = it_par.redundant_info([1, 2, 3, 0])
+        unique_1 = it_par.unique_info([1, 2, 3, 0])
+        unique_2 = it_par.unique_info([2, 1, 3, 0])
+        unique_3 = it_par.unique_info([2, 3, 1, 0])
+        synergy = it_par.synergy([1, 2, 3, 0])
+        targets = [total_mi, redundant_info, unique_1, unique_2, unique_3, synergy]
+
+        # Alternate PID-ing
+        total_mi = it_par.mutual_info([1, 1, 1, 0])
+        redundant_info = it_par.redundant_info([2, 1, 3, 0])
+        unique_1 = it_par.unique_info([1, 3, 2, 0])
+        unique_2 = it_par.unique_info([3, 1, 2, 0])
+        unique_3 = it_par.unique_info([3, 2, 1, 0])
+        synergy = it_par.synergy([2, 1, 3, 0])
+
+        base_str = "Decomposition equivalence | "
+        do_matching(base_str, total_mi, targets[0], "Total MI")
+        do_matching(base_str, redundant_info, targets[1], "Redundant info | ")
+        do_matching(base_str, unique_1, targets[2], "Unique source 1 info | ")
+        do_matching(base_str, unique_2, targets[3], "Unique source 2 info | ")
+        do_matching(base_str, unique_3, targets[4], "Unique source 3 info | ")
+        do_matching(base_str, synergy, targets[5], "Synergistic info | ")
+
+    except Exception as e:
+        _except(e)
+
+
+def decomposition_test_4D(dims, nreps, nbins, data_ranges, data, targets):
+    """ testing if 4D PID matches expected values """
+    try:
+        # creating the object and adding data
+        it_par = infotheory.InfoTools(dims, nreps)
+        it_par.set_equal_interval_binning(nbins, data_ranges[0], data_ranges[1])
+        it_par.add_data(data)
+
+        # PID-ing
+        total_mi = it_par.mutual_info([1, 1, 1, 0])
+        redundant_info = it_par.redundant_info([1, 2, 3, 0])
+        unique_1 = it_par.unique_info([1, 2, 3, 0])
+        unique_2 = it_par.unique_info([2, 1, 3, 0])
+        unique_3 = it_par.unique_info([2, 3, 1, 0])
+        synergy = it_par.synergy([1, 2, 3, 0])
+        results = [total_mi, redundant_info, unique_1, unique_2, unique_3, synergy]
+
+        base_str = "Decomposition test | "
+        do_matching(base_str, total_mi, targets[0], "Total MI")
+        do_matching(base_str, redundant_info, targets[1], "Redundant info | ")
+        do_matching(base_str, unique_1, targets[2], "Unique source 1 info | ")
+        do_matching(base_str, unique_2, targets[3], "Unique source 2 info | ")
+        do_matching(base_str, unique_3, targets[4], "Unique source 3 info | ")
+        do_matching(base_str, synergy, targets[5], "Synergistic info | ")
+
+    except Exception as e:
+        _except(e)
+
+
+def pid_test_3D(dims, nreps, nbins, data_ranges, data):
     """ testing sum of pid == total_mi """
     try:
         # creating the object
@@ -57,7 +135,7 @@ def pid_test(dims, nreps, nbins, data_ranges, data):
         _except(e)
 
 
-def decomposition_equivalence(dims, nreps, nbins, data_ranges, data):
+def decomposition_equivalence_3D(dims, nreps, nbins, data_ranges, data):
     try:
         # creating the object
         it = infotheory.InfoTools(dims, nreps)
@@ -69,15 +147,14 @@ def decomposition_equivalence(dims, nreps, nbins, data_ranges, data):
         synergy_1 = it.synergy([1, 2, 0])
         redundant_info_2 = it.redundant_info([2, 1, 0])
         synergy_2 = it.synergy([2, 1, 0])
-        if redundant_info_1 == redundant_info_2 and synergy_1 == synergy_2:
-            print(SUCCESS)
-        else:
-            raise Exception("Redundant and synergistic infor are equivalent")
+        base_str = "Decomposition equivalence | "
+        do_matching(base_str, redundant_info_1, redundant_info_2, "Redundant info | ")
+        do_matching(base_str, synergy_1, synergy_2, "Synergy | ")
     except Exception as e:
         _except(e)
 
 
-def decomposition_test(dims, nreps, nbins, data_ranges, data, results):
+def decomposition_test_3D(dims, nreps, nbins, data_ranges, data, results):
     try:
         # creating the object
         it = infotheory.InfoTools(dims, nreps)
@@ -172,29 +249,68 @@ def entropy_test(dims, nreps, nbins, data_ranges, data_sampler, num_samples=1000
         _except(e)
 
 
-def test_pid():
+def test_pid_4D():
+    """ Testing
+    3D PI-decomposition
+    1. sanity for each PI measure
+    2. known PIDs for even parity
+    """
+    print("\n" + bcolors.TEST_HEADER + "PID-4D" + bcolors.ENDC)
+
+    ## Testing PID by value
+    dims = 4
+    nreps = 0
+    nbins = [2] * dims
+    data_ranges = [[0] * dims, [1] * dims]
+
+    # Even parity check
+    data = [
+        [0, 0, 0, 0],
+        [0, 0, 1, 1],
+        [0, 1, 0, 1],
+        [0, 1, 1, 0],
+        [1, 0, 0, 1],
+        [1, 0, 1, 0],
+        [1, 1, 0, 0],
+        [1, 1, 1, 1],
+    ]
+    targets = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+    print("Testing PID with even parity checker")
+    decomposition_test_4D(dims, nreps, nbins, data_ranges, data, targets)
+
+    # random data
+    print("Testing PID with uniform random data")
+    dims = 4
+    neps = 0
+    nbins = [50] * dims
+    data_ranges = [[0] * dims, [1] * dims]
+    data = np.random.rand(5000, dims)
+    decomposition_equivalence_4D(dims, nreps, nbins, data_ranges, data)
+
+
+def test_pid_3D():
     """ Testing
     1. sum(PID) == mi
     2. known PIDs for logic gates
     3. synergy([0,1,2]) == synergy([0,2,1])?
     """
-    print("\n" + bcolors.TEST_HEADER + "PID" + bcolors.ENDC)
+    print("\n" + bcolors.TEST_HEADER + "PID-3D" + bcolors.ENDC)
 
     ## Testing PID by value
     dims = 3
     neps = 0
-    nbins = [2] * 3
-    data_ranges = [[0] * 3, [1] * 3]
+    nbins = [2] * dims
+    data_ranges = [[0] * dims, [1] * dims]
 
     # AND gate
     data = [[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 1]]
     print("Testing total PID with total mi | AND gate = ", end="", flush=True)
-    pid_test(dims, nreps, nbins, data_ranges, data)
+    pid_test_3D(dims, nreps, nbins, data_ranges, data)
 
     # XOR gate
     data = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 0]]
     print("Testing total PID with total mi | XOR gate = ", end="", flush=True)
-    pid_test(dims, nreps, nbins, data_ranges, data)
+    pid_test_3D(dims, nreps, nbins, data_ranges, data)
 
     # random data
     dims = 3
@@ -203,7 +319,7 @@ def test_pid():
     data_ranges = [[0] * 3, [1] * 3]
     data = np.random.rand(500, dims)
     print("Testing total PID with total mi | random data = ", end="", flush=True)
-    pid_test(dims, nreps, nbins, data_ranges, data)
+    pid_test_3D(dims, nreps, nbins, data_ranges, data)
 
     ## Testing PI decomposition
     dims = 3
@@ -214,11 +330,11 @@ def test_pid():
     # AND gate
     data = [[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 1]]
     print("Testing decomposition with AND gate = ", end="", flush=True)
-    decomposition_test(dims, nreps, nbins, data_ranges, data, [0.31, 0.0, 0.0, 0.5])
+    decomposition_test_3D(dims, nreps, nbins, data_ranges, data, [0.31, 0.0, 0.0, 0.5])
     # XOR gate
     data = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 0]]
     print("Testing decomposition with XOR gate = ", end="", flush=True)
-    decomposition_test(dims, nreps, nbins, data_ranges, data, [0.0, 0.0, 0.0, 1.0])
+    decomposition_test_3D(dims, nreps, nbins, data_ranges, data, [0.0, 0.0, 0.0, 1.0])
 
     ## Testing decomposition equivalence
     dims = 3
@@ -228,21 +344,13 @@ def test_pid():
 
     # AND gate
     data = [[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 1]]
-    print(
-        "Testing redundant and synergistic equivalence | AND gate = ",
-        end="",
-        flush=True,
-    )
-    decomposition_equivalence(dims, nreps, nbins, data_ranges, data)
+    print("Testing redundant and synergistic equivalence | AND gate")
+    decomposition_equivalence_3D(dims, nreps, nbins, data_ranges, data)
 
     # XOR gate
     data = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 0]]
-    print(
-        "Testing redundant and synergistic equivalence | XOR gate = ",
-        end="",
-        flush=True,
-    )
-    decomposition_equivalence(dims, nreps, nbins, data_ranges, data)
+    print("Testing redundant and synergistic equivalence | XOR gate")
+    decomposition_equivalence_3D(dims, nreps, nbins, data_ranges, data)
 
     # random data
     dims = 3
@@ -250,12 +358,8 @@ def test_pid():
     nbins = [50] * 3
     data_ranges = [[0] * 3, [1] * 3]
     data = np.random.rand(500, dims)
-    print(
-        "Testing redundant and synergistic equivalence | random data = ",
-        end="",
-        flush=True,
-    )
-    decomposition_equivalence(dims, nreps, nbins, data_ranges, data)
+    print("Testing redundant and synergistic equivalence | random data")
+    decomposition_equivalence_3D(dims, nreps, nbins, data_ranges, data)
 
 
 def test_mutual_info(dims, nreps, nbins, data_ranges):
@@ -335,7 +439,11 @@ def test_binning(dims, nreps, nbins, data_ranges):
         _except(e)
 
     # mi_eq == mi_mb?
-    print("Tested both binning methods. Difference in result = {}".format(mi_eq-mi_mb), SUCCESS)
+    print(
+        "Tested both binning methods. Difference in result = {}".format(mi_eq - mi_mb),
+        SUCCESS,
+    )
+
 
 def test_creation(dims, nreps, nbins, data_ranges):
     print("Testing creating an object. ", end="", flush=True)
@@ -350,17 +458,13 @@ def test_creation(dims, nreps, nbins, data_ranges):
 
 def run_tests(dims, nreps, nbins, data_ranges):
     """ runs all tests """
-    print(
-        "\nTest config: dims={}, nreps={}, nbins={}, mins={}, maxs={}".format(
-            dims, nreps, nbins, data_ranges[0], data_ranges[1]
-        )
-    )
     print(bcolors.HEADER + "************ Starting tests ************" + bcolors.ENDC)
     test_creation(dims, nreps, nbins, data_ranges)
     test_binning(dims, nreps, [3, 3], data_ranges)
     test_entropy(1, nreps, [50], [[0], [1]])
     test_mutual_info(dims, nreps, nbins, data_ranges)
-    test_pid()
+    test_pid_3D()
+    test_pid_4D()
     print(
         "\n"
         + bcolors.HEADER

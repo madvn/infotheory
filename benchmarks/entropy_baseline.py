@@ -11,11 +11,12 @@
 import numpy as np
 import infotheory
 import matplotlib
-matplotlib.use('TkAgg')
+
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 
 # range of probabilties for HEADS in coin flip
-p = np.arange(0,1.01,0.01)
+p = np.arange(0, 1.01, 0.01)
 entropies = []
 for pi in p:
     it = infotheory.InfoTools(1, 0)
@@ -23,16 +24,18 @@ for pi in p:
 
     # flipping coin 10000 times
     for _ in range(10000):
-        if np.random.rand()<pi: it.add_data_point([0])
-        else: it.add_data_point([1])
+        if np.random.rand() < pi:
+            it.add_data_point([0])
+        else:
+            it.add_data_point([1])
 
     # estimating entropy
     entropies.append(it.entropy([0]))
 
-plt.figure(figsize=[3,2])
+plt.figure(figsize=[3, 2])
 plt.plot(p, entropies)
-plt.xlabel('Probability of HEADS')
-plt.ylabel('Entropy')
+plt.xlabel("Probability of HEADS")
+plt.ylabel("Entropy")
 plt.tight_layout()
-#plt.savefig('./entropy_baseline.png')
+# plt.savefig('./entropy_baseline.png')
 plt.show()

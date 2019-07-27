@@ -14,7 +14,7 @@ import os
 import glob
 from ctypes import cdll, c_void_p, c_int, py_object, py_object, c_double
 
-__version__ = "1.1.1"
+__version__ = "1.0.1"
 
 
 class InfoTools(object):
@@ -179,16 +179,16 @@ class InfoTools(object):
         return mutualInfo_wrapper(self._obj, list(var_IDs))
 
     def redundant_info(self, var_IDs):
-        """ Compute redundant information about a random var from two random vars for datapoints that have already been added.
+        """ Compute redundant information about a random var from two (or three) random vars for datapoints that have already been added.
         The target random var is identified by varIDs==0
-        The two sources are identified by varIDs==1 and varIDs==2.
+        The sources are identified by varIDs==1 and varIDs==2 (optionally varIDs==3 in the case of three sources)
         Set varIDs=-1 for dimensions to be ignored.
 
         ARGS:
         varIDs: (list-like, size=dims) list of length equal to dimensionality of data
 
         RETURNS:
-        Redundant information from vars defined by varIDs==1 and varIDs==2 about varIDs==0
+        Redundant information from vars defined by varIDs==1 and varIDs==2 (optionally varIDs==3 in the case of three sources) about varIDs==0
 
         Example:
         if dims = 4, 4D datapoints will be added. If the first dimension denotes the target and the second and third denote the two sources, then set
@@ -201,16 +201,16 @@ class InfoTools(object):
         return redundantInfo_wrapper(self._obj, list(var_IDs))
 
     def unique_info(self, var_IDs):
-        """ Compute unique information about a random var from two random vars for datapoints that have already been added.
+        """ Compute unique information about a random var from two (or three) random vars for datapoints that have already been added.
         The target random var is identified by varIDs==0
-        The two sources are identified by varIDs==1 and varIDs==2.
+        The sources are identified by varIDs==1 and varIDs==2 (optionally varIDs==3 in the case of three sources)
         Set varIDs=-1 for dimensions to be ignored.
 
         ARGS:
         varIDs: (list-like, size=dims) list of length equal to dimensionality of data
 
         RETURNS:
-        Unique information from vars defined by varIDs==1 about varIDs==0 that is not redundant with varIDs==2
+        Unique information from vars defined by varIDs==1 about varIDs==0 that is not redundant with varIDs==2 (or with varIDs==3 in the case of three sources)
 
         Example:
         if dims = 4, 4D datapoints will be added. If the first dimension denotes the target and the second and third denote the two sources, then set
@@ -222,16 +222,16 @@ class InfoTools(object):
         return uniqueInfo_wrapper(self._obj, list(var_IDs))
 
     def synergy(self, var_IDs):
-        """ Compute synergistic information about a random var from two random vars for datapoints that have already been added.
+        """ Compute synergistic information about a random var from two (or three) random vars for datapoints that have already been added.
         The target random var is identified by varIDs==0
-        The two sources are identified by varIDs==1 and varIDs==2.
+        The sources are identified by varIDs==1 and varIDs==2 (optionally varIDs==3 in the case of three sources)
         Set varIDs=-1 for dimensions to be ignored.
 
         ARGS:
         varIDs: (list-like, size=dims) list of length equal to dimensionality of data
 
         RETURNS:
-        Synergistic information from vars defined by varIDs==1 and varIDs==2 about varIDs==0
+        Synergistic information from vars defined by varIDs==1 and varIDs==2 (and varIDs==3 in the case of three sources) about varIDs==0
 
         Example:
         if dims = 4, 4D datapoints will be added. If the first dimension denotes the target and the second and third denote the two sources, then set

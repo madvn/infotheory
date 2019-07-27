@@ -7,7 +7,9 @@ package_name = "infotheory"
 readme = "README.md"
 license = "LICENSE"
 
-long_description = """## Website and docs
+long_description = """# Package for Mulativariate Information theoretic analyses
+
+## Website and docs
 
 https://github.com/madvn/infotheory"""
 
@@ -30,11 +32,11 @@ setup(
     name=package_name,
     version=__version__,
     description="Information theoretic analysis tools",
-    author="Madhavun Candadai and Eduardo Izquierdo",
+    author="Madhavun Candadai and Eduardo J. Izquierdo",
     author_email="madvncv@gmail.com",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://pages.github.iu.edu/madcanda/Infotheory/",
+    url="https://mcandadai.com/infotheory/",
     packages=[package_name],
     ext_modules=[info_ext_module],
 )

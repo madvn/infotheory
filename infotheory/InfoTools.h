@@ -184,14 +184,13 @@ class InfoTools{
             }
 
             // now for the other reps
-            double offsetWidth, maxLimit;
+            double offsetWidth;
             TVector<double> unitOffset, minLimit;
             unitOffset.SetBounds(1,bi);
             minLimit.SetBounds(1,bi);
             for(int b=1,b1=bLb; b<bi; b++,b1++){
                 offsetWidth = (boundaries[b1+1]-boundaries[b1])/2;
                 minLimit[b] = boundaries[b1]-offsetWidth;
-                //maxLimit = boundaries[b1]+offsetWidth;
                 unitOffset[b] = (boundaries[b1] - minLimit[b])/(((nReps-1)/2)+1);
             }
             // // setting last bin separately using same offset as last but one
@@ -426,130 +425,23 @@ class InfoTools{
                 si[x] = 0.0;
                 for (int y = 1; y <= px[x][2].Size(); y++)
                 {
-                    si[x] += px[x][3][y] * log2(px[x][3][y] / (px[x][1][1] * px[x][2][y]));
+                    si[x] += (px[x][3][y]/px[x][1][1]) * log2(px[x][3][y] / (px[x][1][1] * px[x][2][y]));
                     //cout << px[x][1][1] << " " << px[x][2][y] << " " << px[x][3][y] << " " << px[x][3][y] * log2( px[x][3][y] / (px[x][1][1] * px[x][2][y])) << endl;
                 }
                 //si[x]=si[x]/px[x][1][1]; //XXX not really specific information
             }
         }
-        #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-        //! Returns redundant information about varIDs==0, in varIDs==1 and varIDs==2
-        /*! Set other varIDs of dims to be ignored to -1
-        */
-        double redundantInfo(TVector<int>& vIDs){
-            if(vIDs.Size() != nDims){
-                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
-                cerr << "Skipping this call" << endl;
-                return 0.;
-            }
-
-            TVector<int> varIDs;
-            normalizeBounds(varIDs, vIDs);
-
-            TVector<double> siX1;
-            TVector<double> siX2;
-            TVector<double> p_y;
-
-            TVector<int> varIDsX1, varIDsX2, varIDsY;
-            varIDsX1.SetBounds(1,varIDs.Size());
-            varIDsX2.SetBounds(1,varIDs.Size());
-            varIDsY.SetBounds(1,varIDs.Size());
-
-            for(int d=1; d<=varIDs.Size(); d++){
-                // spec Y
-                if(varIDs[d]==0) {
-                    varIDsY[d] = 0;
-                    varIDsX1[d] = 0;
-                    varIDsX2[d] = 0;
-                }
-                // in X1
-                if(varIDs[d]==1) {
-                    varIDsY[d] = -1;
-                    varIDsX1[d] = 1;
-                    varIDsX2[d] = -1;
-                }
-                // in X2
-                if(varIDs[d]==2) {
-                    varIDsY[d] = -1;
-                    varIDsX1[d] = -1;
-                    varIDsX2[d] = 1;
-                }
-            }
-            //cout << "varIDs " << varIDsX1 << "--" << varIDsX2 << endl;
-
-            computeIndProbs(p_y, varIDsY);
-            specificInfo(siX1,varIDsX1);
-            specificInfo(siX2,varIDsX2);
-
-            double ri = 0.0;
-
-            //
-            for (int l = 1; l <= siX1.Size(); l++)
-            {
-                ri += (siX1[l]<siX2[l]?siX1[l]:siX2[l]);
-            }
-            return ri;
-        }
-
-        //! Returns amount of unique information about varIDs==0, from varIDs==1 and not from varIDs==2
-        /*! Set other varIDs of dims to be ignored to -1
-        */
-        double uniqueInfo(TVector<int>& vIDs){
-            if(vIDs.Size() != nDims){
-                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
-                cerr << "Skipping this call" << endl;
-                return 0.;
-            }
-
-            TVector<int> varIDs;
-            normalizeBounds(varIDs, vIDs);
-
-            TVector<int> varIDsX1;
-            varIDsX1.SetBounds(1,varIDs.Size());
-
-            for(int d=1; d<=varIDs.Size(); d++){
-                // spec Y
-                if(varIDs[d]==0) {
-                    varIDsX1[d] = 0;
-                }
-                // in X1
-                if(varIDs[d]==1) {
-                    varIDsX1[d] = 1;
-                }
-                // in X2
-                if(varIDs[d]==2) {
-                    varIDsX1[d] = -1;
-                }
-            }
-
-            double infoX1 = mutualInfo(varIDsX1);
-            double redun = redundantInfo(varIDs);
-            //cout << "From unique info" << endl;
-            //cout << "Total info from " << varIDsX1 << " = " << infoX1 << endl;
-            //cout << "Redun info from " << varIDs << " = " << redun << endl;
-
-            return infoX1 - redun;
-
-        }
-
-        //! Returns amount of synergistic information about varIDs==0, in varIDs==1 and varIDs==2
-        /*! Set other varIDs of dims to be ignored to -1
-        */
-        double synergy(TVector<int>& vIDs){
-            if(vIDs.Size() != nDims){
-                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
-                cerr << "Skipping this call" << endl;
-                return 0.;
-            }
-
-            TVector<int> varIDs;
-            normalizeBounds(varIDs, vIDs);
-
+        double synergy3D(TVector<int>& varIDs){
+            // 2-way synergy with three variables - 2 sources and 1 target
             TVector<int> varIDsX1, varIDsX2, varCommon;
             varIDsX1.SetBounds(1,varIDs.Size());
             varIDsX2.SetBounds(1,varIDs.Size());
             varCommon.SetBounds(1,varIDs.Size());
+            // by default ignore all vars
+            varIDsX1.FillContents(-1);
+            varIDsX2.FillContents(-1);
+            varCommon.FillContents(-1);
 
             for(int d=1; d<=varIDs.Size(); d++){
                 // spec Y
@@ -577,16 +469,263 @@ class InfoTools{
             double infoX2 = mutualInfo(varIDsX2);
             double redun = redundantInfo(varIDs);
 
-            double synergy = mi - infoX1 - infoX2 + redun;
-            //cout << "mutualInfo = " << mi << endl;
-            //cout << "uniqueInfoX1 = " << infoX1 - redun << endl;
-            //cout << "uniqueInfoX2 = " << infoX2 - redun << endl;
-            //cout << "redundancy = " << redun << endl;
-            //cout << "synergy = " << synergy << endl;
-
-            return synergy;
+            double syn = mi - infoX1 - infoX2 + redun;
+            return syn;
         }
 
+        double synergy4D(TVector<int>& varIDs){
+            // 3-way synergy with three variables - 3 sources and 1 target
+            // Refer to supplementary figure 4 in Williams, P. L., & Beer, R. D. (2010). Nonnegative decomposition of multivariate information. arXiv preprint arXiv:1004.2515.
+
+            ////// all required information atoms
+            // mutual infos
+            double mi12, mi23, mi13, mi123;
+            // 2-2-2 redundant infos
+            double r12r13 = 0., r13r23 = 0., r12r23 = 0.;
+            // 2-2-3 redundant infos
+            double r12r13r23 = 0.;
+
+            TVector<int> viY, vi1, vi2, vi3, vi12, vi23, vi13, vi123;
+            makeAllVarIDCombinations(varIDs, viY, vi1, vi2, vi3, vi12, vi23, vi13, vi123);
+
+            // all mutual info terms
+            mi12 = mutualInfo(vi12);
+            mi23 = mutualInfo(vi23);
+            mi13 = mutualInfo(vi13);
+            mi123 = mutualInfo(vi123);
+
+            // other redundant infos
+            TVector<TVector<TVector<double> > > py;
+            TVector<double> spec12, spec13, spec23;
+            computeSpecProbs(py, viY);
+            specificInfo(spec12, vi12);
+            specificInfo(spec13, vi13);
+            specificInfo(spec23, vi23);
+            for (int l = 1; l <= spec12.Size(); l++){
+                // 2-2 redundant infos
+                r12r13 += py[l][1][1]*(spec12[l]<spec13[l]?spec12[l]:spec13[l]);
+                r13r23 += py[l][1][1]*(spec13[l]<spec23[l]?spec13[l]:spec23[l]);
+                r12r23 += py[l][1][1]*(spec12[l]<spec23[l]?spec12[l]:spec23[l]);
+
+                // 2-3 redundant infos
+                if(spec12[l] <= spec13[l] && spec12[l] <= spec23[l]) r12r13r23 += py[l][1][1]*spec12[l];
+                else if(spec13[l] <= spec12[l] && spec13[l] <= spec23[l]) r12r13r23 += py[l][1][1]*spec13[l];
+                else r12r13r23 += py[l][1][1]*spec23[l];
+            }
+
+            // estimate synergy
+            double syn = mi123 - (mi12 + mi13 + mi23 - r12r13 - r12r23 - r13r23 + r12r13r23);
+
+            return syn;
+        }
+        #endif /* DOXYGEN_SHOULD_SKIP_THIS */
+
+        //! Returns redundant information about varIDs==0, in varIDs==1, varIDs==2 and optionally varIDs==3
+        /*! Set other varIDs of dims to be ignored to -1
+        */
+        double redundantInfo(TVector<int>& vIDs){
+            if(vIDs.Size() != nDims){
+                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
+                cerr << "Skipping this call" << endl;
+                return 0.;
+            }
+
+            TVector<int> varIDs;
+            normalizeBounds(varIDs, vIDs);
+            int multivariateDim = 0;
+
+            TVector<int> varIDsX1, varIDsX2, varIDsX3, varIDsY;
+            varIDsX1.SetBounds(1,varIDs.Size());
+            varIDsX2.SetBounds(1,varIDs.Size());
+            varIDsX3.SetBounds(1,varIDs.Size());
+            varIDsY.SetBounds(1,varIDs.Size());
+            // by default ignore all vars
+            varIDsX1.FillContents(-1);
+            varIDsX2.FillContents(-1);
+            varIDsX3.FillContents(-1);
+            varIDsY.FillContents(-1);
+
+            for(int d=1; d<=varIDs.Size(); d++){
+                // spec Y
+                if(varIDs[d]==0) {
+                    varIDsY[d] = 0;
+                    varIDsX1[d] = 0;
+                    varIDsX2[d] = 0;
+                    varIDsX3[d] = 0;
+                }
+                // in X1
+                else if(varIDs[d]==1) {
+                    varIDsY[d] = -1;
+                    varIDsX1[d] = 1;
+                    varIDsX2[d] = -1;
+                    varIDsX3[d] = -1;
+                }
+                // in X2
+                else if(varIDs[d]==2) {
+                    varIDsY[d] = -1;
+                    varIDsX1[d] = -1;
+                    varIDsX2[d] = 1;
+                    varIDsX3[d] = -1;
+                    if(multivariateDim < 2){
+                        multivariateDim = 2;
+                    }
+                }
+                // in X3
+                else if(varIDs[d]==3) {
+                    varIDsY[d] = -1;
+                    varIDsX1[d] = -1;
+                    varIDsX2[d] = -1;
+                    varIDsX3[d] = 1;
+                    multivariateDim = 3;
+                }
+            }
+
+            // making sure there are 3 vars at least
+            if(multivariateDim < 2){
+                cerr << "For PID measures, there needs to be at least 3 (at most 4) variables identidied in varIDs using [0, 1, 2,] or [0, 1, 2, 3] in case of 4" << endl;
+                exit(1);
+            }
+
+            // set up
+            //TVector<double> py;
+            TVector<TVector<TVector<double> > > py;
+            TVector<double> siX1;
+            TVector<double> siX2;
+            TVector<double> siX3;
+
+            computeSpecProbs(py, varIDsY);
+            specificInfo(siX1,varIDsX1);
+            specificInfo(siX2,varIDsX2);
+            if(multivariateDim == 3){
+                specificInfo(siX3,varIDsX3);
+            }
+
+            double ri = 0.0;
+
+            // estimating ri
+            if(multivariateDim == 2){
+                for (int l = 1; l <= siX1.Size(); l++){
+                    ri += py[l][1][1]*(siX1[l]<siX2[l]?siX1[l]:siX2[l]);
+                }
+            }
+            if(multivariateDim == 3){
+                for (int l = 1; l <= siX1.Size(); l++){
+                    if(siX1[l] <= siX2[l] && siX1[l] <= siX3[l]) ri += py[l][1][1]*siX1[l];
+                    else if(siX2[l] <= siX1[l] && siX2[l] <= siX3[l]) ri += py[l][1][1]*siX2[l];
+                    else ri += py[l][1][1]*siX3[l];
+                }
+            }
+            //cout << "returning ri" << endl;
+            return ri;
+        }
+
+        //! Returns amount of unique information about varIDs==0, from varIDs==1 and not from varIDs==2 or optionally varIDs==3
+        /*! Set other varIDs of dims to be ignored to -1
+        */
+        double uniqueInfo(TVector<int>& vIDs){
+            if(vIDs.Size() != nDims){
+                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
+                exit(1);
+            }
+
+            // setup
+            TVector<int> varIDs;
+            normalizeBounds(varIDs, vIDs);
+            int multivariateDim = 0;
+            TVector<int> varIDsX1, varIDsr12, varIDsr13, varIDs23;
+            varIDsX1.SetBounds(1,varIDs.Size());
+            varIDsr12.SetBounds(1,varIDs.Size());
+            varIDsr13.SetBounds(1,varIDs.Size());
+            varIDs23.SetBounds(1,varIDs.Size());
+            // by default ignore all vars
+            varIDsX1.FillContents(-1);
+            varIDsr12.FillContents(-1);
+            varIDsr13.FillContents(-1);
+            varIDs23.FillContents(-1);
+
+            for(int d=1; d<=varIDs.Size(); d++){
+                // spec Y
+                if(varIDs[d]==0) {
+                    varIDsX1[d] = 0;
+                    varIDs23[d] = 0;
+                }
+                // in X1
+                if(varIDs[d]==1) {
+                    varIDsX1[d] = 1;
+                    varIDs23[d] = 1;
+                }
+                // in X2
+                if(varIDs[d]==2) {
+                    varIDsX1[d] = -1;
+                    varIDs23[d] = 2;
+                    if(multivariateDim < 2){
+                        multivariateDim = 2;
+                    }
+                }
+                // in X3
+                if(varIDs[d]==3){
+                    varIDsX1[d] = -1;
+                    varIDs23[d] = 2;
+                    multivariateDim = 3;
+                }
+            }
+
+            // making sure there are 3 vars at least
+            if(multivariateDim < 2){
+                cerr << "For PID measures, there needs to be at least 3 (at most 4) variables identidied in varIDs using [0, 1, 2,] or [0, 1, 2, 3] in case of 4" << endl;
+                exit(1);
+            }
+
+            double infoX1 = mutualInfo(varIDsX1);
+            double uinfo;
+            // bivariate
+            if(multivariateDim == 2){
+                double redun = redundantInfo(varIDs);
+                uinfo = infoX1 - redun;
+            }
+            // trivariate
+            if(multivariateDim == 3){
+                double redunCombined23 = redundantInfo(varIDs23);
+                uinfo = infoX1 - redunCombined23;
+            }
+
+            return uinfo;
+        }
+
+        //! Returns amount of synergistic information about varIDs==0, in varIDs==1, varIDs==2 and optionally varIDs==3
+        /*! Set other varIDs of dims to be ignored to -1
+        */
+        double synergy(TVector<int>& vIDs){
+            if(vIDs.Size() != nDims){
+                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
+                cerr << "Skipping this call" << endl;
+                return 0.;
+            }
+
+            TVector<int> varIDs;
+            normalizeBounds(varIDs, vIDs);
+
+            int multivariateDim = 0;
+            for(int d=1; d<=varIDs.Size(); d++){
+                multivariateDim = varIDs[d]>multivariateDim?varIDs[d]:multivariateDim;
+            }
+
+            // making sure there are 3 vars at least
+            if(multivariateDim < 2){
+                cerr << "For PID measures, there needs to be at least 3 (at most 4) variables identified in varIDs using [0, 1, 2,] or [0, 1, 2, 3] in case of 4" << endl;
+                exit(1);
+            }
+
+            double syn = 0.;
+            if(multivariateDim == 2){
+                syn = synergy3D(varIDs);
+            }
+            else{
+                syn = synergy4D(varIDs);
+            }
+
+            return syn;
+        }
 
         //! Estimates complete info decomposition in infos, returns
         /*!     total mutual information about varIDs==0, from varIDs==1 and varIDs==2\n
@@ -943,6 +1082,74 @@ class InfoTools{
             dataReadyFlag = 1;
             binnedData.SetSize(0); // XXX unable to delete
             //cout << "Done Collapsing data" << endl;
+        }
+        void makeAllVarIDCombinations(TVector<int>& varIDs, TVector<int>& viY, TVector<int>& vi1, TVector<int>& vi2, TVector<int>& vi3, TVector<int>& vi12, TVector<int>& vi23, TVector<int>& vi13, TVector<int>&vi123){
+            // makes all varID combinations for 4D data
+            viY.SetBounds(1,varIDs.Size());
+            vi1.SetBounds(1,varIDs.Size());
+            vi2.SetBounds(1,varIDs.Size());
+            vi3.SetBounds(1,varIDs.Size());
+            vi12.SetBounds(1,varIDs.Size());
+            vi23.SetBounds(1,varIDs.Size());
+            vi13.SetBounds(1,varIDs.Size());
+            vi123.SetBounds(1,varIDs.Size());
+            // by default ignore all vars
+            viY.FillContents(-1);
+            vi1.FillContents(-1);
+            vi2.FillContents(-1);
+            vi3.FillContents(-1);
+            vi12.FillContents(-1);
+            vi23.FillContents(-1);
+            vi13.FillContents(-1);
+            vi123.FillContents(-1);
+
+            // prep for mutual info estimates
+            for(int d=1; d<=varIDs.Size(); d++){
+                // spec Y
+                if(varIDs[d]==0) {
+                    viY[d] = 0;
+                    vi1[d] = 0;
+                    vi2[d] = 0;
+                    vi3[d] = 0;
+                    vi12[d] = 0;
+                    vi23[d] = 0;
+                    vi13[d] = 0;
+                    vi123[d] = 0;
+                }
+                // in X1
+                else if(varIDs[d] == 1){
+                    viY[d] = -1;
+                    vi1[d] = 1;
+                    vi2[d] = -1;
+                    vi3[d] = -1;
+                    vi12[d] = 1;
+                    vi23[d] = -1;
+                    vi13[d] = 1;
+                    vi123[d] = 1;
+                }
+                // in X2
+                else if(varIDs[d] == 2){
+                    viY[d] = -1;
+                    vi1[d] = -1;
+                    vi2[d] = 1;
+                    vi3[d] = -1;
+                    vi12[d] = 1;
+                    vi23[d] = 1;
+                    vi13[d] = -1;
+                    vi123[d] = 1;
+                }
+                // in X3
+                else if(varIDs[d] == 3){
+                    viY[d] = -1;
+                    vi1[d] = -1;
+                    vi2[d] = -1;
+                    vi3[d] = 1;
+                    vi12[d] = -1;
+                    vi23[d] = 1;
+                    vi13[d] = 1;
+                    vi123[d] = 1;
+                }
+            }
         }
         #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
