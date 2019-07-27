@@ -27,6 +27,7 @@ The main highlights of this package include:
    <li>use of sparse data structures that work well with high-dimensional data</li>
    <li>user-controllable estimation of data distribution using averaged shifted histograms <a href="#scott:1985">[4]</a></li>
    <li>flexibilty to specify binning allows proper estimation of information measures between continuous and discrete variables</li>
+   <li>perform PI-decomposition over 3 (two sources and 1 target) and 4 (three variables and 1 target) variables</li>
 </ul>
 
 The package can be used in Python or C++. While the C++ headers should function well on all platforms, the python package has currently been tested on MacOS and Linux.
