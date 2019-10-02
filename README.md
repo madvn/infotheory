@@ -56,6 +56,10 @@ On MacOS, upgrade to MacOS-Mojave and update Xcode. You might have to set these 
 
 For C++, simply download [InfoTools.h](https://github.com/madvn/infotheory/blob/master/infotheory/InfoTools.h) and [VectorMatrix.h](https://github.com/madvn/infotheory/blob/master/infotheory/VectorMatrix.h) and include those header files in your code.
 
+#### Dependencies
+
+The package doesn't have any dependencies per se but the automated tests require numpy 
+
 ## Usage
 
 Using this package in your own code involves the following steps.
