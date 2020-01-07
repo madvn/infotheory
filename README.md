@@ -49,7 +49,7 @@ Candadai, M., & Izquierdo, E. J. (2019). infotheory: A C++/Python package for mu
 
     pip install infotheory
 
-On MacOS, upgrade to MacOS-Mojave and update Xcode. You might have to set these environment variables from your terminal.
+On MacOS, upgrade to MacOS-Mojave (or later) and update Xcode. You might have to set these environment variables from your terminal.
 
     export CXXFLAGS="-mmacosx-version-min=10.9"
     export LDFLAGS="-mmacosx-version-min=10.9"
@@ -58,7 +58,7 @@ For C++, simply download [InfoTools.h](https://github.com/madvn/infotheory/blob/
 
 #### Dependencies
 
-The package doesn't have any dependencies per se but the automated tests require numpy 
+The package doesn't have any dependencies per se but the automated tests require numpy
 
 ## Usage
 
@@ -68,7 +68,7 @@ Using this package in your own code involves the following steps.
 <img src="https://github.com/madvn/infotheory/blob/master/demos/usage_icons.png" width="480">
 </p>
 
-See [demos](https://github.com/madvn/infotheory/tree/master/demos/python) and [website](http://mcandadai/infotheory/) for sample programs on how to use this package.
+See [demos](https://github.com/madvn/infotheory/tree/master/demos/python) and [website](http://mcandadai.com/infotheory/) for sample programs on how to use this package.
 
 ## Contact
 
