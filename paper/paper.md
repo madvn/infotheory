@@ -11,14 +11,14 @@ tags:
 authors:
   - name: Madhavun Candadai
     orcid: 0000-0002-9254-8641
-    affiliation: "1, 2" # (Multiple affiliations must be quoted)
+    affiliation: "1, 2"
   - name: Eduardo J. Izquierdo
     orcid: 0000-0002-2008-290X
     affiliation: "1, 2"
 affiliations:
- - name: Program in Cognitive Science, Indiana University, Bloomington, IN, U.S.A.
+ - name: Cognitive Science Program, Indiana University, Bloomington, IN, U.S.A.
    index: 1
- - name: School of Informatics, Computing and Engineering, Indiana University, Bloomington, IN, U.S.A.
+ - name: School of Informatics, Computing, and Engineering, Indiana University, Bloomington, IN, U.S.A.
    index: 2
 date: 03 July 2019
 bibliography: paper.bib
@@ -26,7 +26,7 @@ bibliography: paper.bib
 
 # Summary
 
-This paper introduces ``infotheory``: a package written in C++ and usable from Python and C++, for multivariate information theoretic analyses of discrete and continuous data. It is open-source ([https://git.io/infot](https://git.io/infot)) and details on how to install it and use it are available on its [website](http://mcandadai.com/infotheory/). This package allows the user to study the relationship between components of a complex system simply from the data recorded during its operation, using the tools of information theory.
+This paper introduces ``infotheory``: a package written in C++ and usable from Python and C++, for multivariate information theoretic analyses of discrete and continuous data. It is open-source ([https://git.io/infot](https://git.io/infot)) and details on how to install it and use it are available on its [website](http://mcandadai.com/infotheory/). This package allows the user to study the relationship between components of a complex system simply from the data recorded during its operation, using the tools of information theory. Specifically, this package enables the measurement of entropy, and mutual information, and also allows the user to perform partial information decomposition of mutual information into unique, redundant and synergistic information quantities.  
 
 # Background
 
@@ -44,16 +44,21 @@ Multivariate analysis allows us to ask more detailed questions such as, what is 
 
 ``infotheory`` implements widely used measures such as entropy and mutual information [@cover2012], as well as more recent measures that arise from multivariate extensions to information theory.
 As such, the tool has been designed to be easy to use and is ideal for pedagogical demonstrations of information theory as well as in research.
-Here, we highlight seven key aspects of its implementation that make our package a valuable addition to any information theoretic analyses toolbox along with two existing packages, namely dit [@james2018b] (focuses on discrete variables) and IDTxL [@wollstadt12019] (implements an alternate approach to 3 variable PID).
-First, the package is written in C++. One of the main challenges of multivariate analyses on a large, complex system is the amount of computations involved. Implementation in C++ makes the package efficient.
+Here, we highlight seven key aspects of its implementation that make our package a valuable addition to any information theoretic analyses tools set. First, the package is written in C++. One of the main challenges of multivariate analyses on a large, complex system is the amount of computations involved. Implementation in C++ makes the package efficient.
 Second, the package can be used from either C++ or Python. Python wrapping allows for ease of use, as well as compatibility with other powerful open-source libraries such as numpy.
 Third, the API allows adding the data only once to then perform various analyses across different sub-spaces of the dataset cheaply.
-Fourth, a custom sparse data structure is used to represent the random variables. This allows the package to work easily with high-dimensional data.
+Fourth, a custom sparse data structure is used to represent the random variables. This allows the package to work easily with large amounts of data.
 Fifth, to better estimate the data distribution in case of continuous variables, the package employs a kernel-based density estimation method called 'averaged shifted histograms' because of its beneficial trade-off between computational and statistical efficiency [@scott1985].
 Sixth, the package includes user-controllable specification of binning. This is essential for estimating distributions on hybrid systems with a mix of continuous and discrete variables.
 Finally, this package implements decomposition of information in 3 as well as 4 variable systems thus making it unique among similar existing packages.
 
+One of the major challenges in utilizing information theoretic measures in experimental settings is the availability of sufficient data to infer the data distributions correctly [@paninski2003estimation]. To estimate data distribution from limited data, we have employed average shifted histograms for its beneficial trade-off between statistical and computational efficiency [@scott1985]. This involves discretizing the data space into a number of bins and estimating frequentist probabilities based on the bins occupied by data samples. To reduce the impact of arbitrarily chosen bin boundaries the data distribution is estimated by averaging the bin occupancies across multiple shifted binnings of the data space. This binning based estimator has been shown to approximate a triangle kernel estimator [@scott1985]. While the binning provides significant computational advantages, its approximation errors must be considered. Bias properties and guidelines for choosing the parameters for average shifted histograms are given in [@scott1985, @fernando2009selection, @scott1979optimal, @scott2012multivariate]. For a moderate sample size, 5 to 10 shifted histograms has been shown to be adequate [@scott1985]. In general, average shifted histograms are best suited for noisy continuous data where the distribution of the data is unknown. For a more involved discussion on density estimation and its bias properties we point the reader to [@scott1987biased] and [@wand1994kernel].
+
+Two existing packages that are most similar to ours are dit [@james2018b] and IDTxL [@wollstadt12019]. Unlike dit, our package can also help analyze continuous-valued data and unlike dit and IDTxL we have implemented PID analysis of 4 variables: 3 sources and 1 target. Other notable packages include: pyentropy [@inceinformation], which was primarily designed for estimating entropies; and JDIT [@lizier2014jidt], which was primarily designed for measuring transfer entropy. Neither pyentropy nor JDIT implement PID measures, although authors of JDIT have an unpublished GitHub repository that has a Java implementation of PID called [JPID](https://github.com/jlizier/jpid).
+In light of these existing packages and their functionalities, our package primarily focuses on measuring multivariate informational quantities on continuous data where the data distribution is not known a priori. However, it can still be used with discrete data using the same methods.
+
 The functions implementing the above mentioned information theoretic measures have been designed to be flexibly used in alternative ways. For instance, the decomposed information components can be combined to measure transfer entropy [@schreiber2000]. When dealing with time-series data, one can restructure the data such that the two sources are past values of two random variables, and the target is a future value of one of them. It has been shown that the sum of the unique information that a source provides about the target (future value) and the synergistic information from both sources is equal to the amount of information transferred from that source [@williams2011]. Transfer entropy is used extensively in neuroscience to infer directed functional connections between nodes of a network (nodes can be neurons, brain regions or EEG electrodes) from recorded data [@wibral2014]. Another instance of extended use of this package is to measure changes in information in time. Again, with time-series data, if the user provides all data over all time-points, then they can ask the tool to calculate all the previously discussed measures as aggregate values over time. Alternatively, the user can provide data that are only from a specific time point, calculate the information theoretic measures for that time point, and then repeat the analyses over the entire time course. Such analysis reveals how information in the variables of the system change dynamically during the course of its operation [@izquierdo2015, @beer2015]. Both extensions are easily accessible by reusing the existing mutual information and PID functions in the package and providing different subsets of the data accordingly.
+
 
 # Conclusion
 
@@ -61,6 +66,6 @@ Altogether, ``infotheory`` provides an easy-to-use and flexible tool for perform
 
 # Acknowledgements
 
-The work in this paper was supported in part by NSF grant No. IIS-1524647. M.C. was funded by an assistantship from the Program in Cognitive Science, Indiana University, Bloomington. The authors would like to thank Randall Beer for VectorMatrix, the C++ vector libraries used in this package.
+The work in this paper was supported in part by NSF grant No. IIS-1524647. M.C. was funded by an assistantship from the Cognitive Science Program, Indiana University, Bloomington. The authors would like to thank Randall Beer for VectorMatrix, the C++ vector libraries used in this package.
 
 # References
