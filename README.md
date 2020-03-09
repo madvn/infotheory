@@ -1,6 +1,10 @@
 # Infotheory
 [![Build Status](https://travis-ci.org/madvn/infotheory.svg?branch=master)](https://travis-ci.org/madvn/infotheory)
 [![License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/madvn/infotheory/blob/master/LICENSE)
+[![status](http://joss.theoj.org/papers/66bb8ec7cb9beaf15b15f21526fe3af8/status.svg)](http://joss.theoj.org/papers/66bb8ec7cb9beaf15b15f21526fe3af8)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3671994.svg)](https://doi.org/10.5281/zenodo.3671994)
+
+
 
 Website: [http://mcandadai.com/infotheory/](http://mcandadai.com/infotheory/)
 
