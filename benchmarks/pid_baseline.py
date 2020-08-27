@@ -73,6 +73,11 @@ it_3and.set_equal_interval_binning([2] * 4, [0] * 4, [1] * 4)
 it_3and.add_data(data)
 
 # PID-ing
+# NOTE: The terms estimated below do not represent the 18 terms 
+# of the 3 source PID decomposition. This is just an example of
+# some of the different things you could do with the dataset. 
+# For instance, redundant_12 is just the two variable redundant
+# info between var==1 and var==2, and does not consider var==3
 total_mi = it_3and.mutual_info([1, 1, 1, 0])
 mi_12 = it_3and.mutual_info([1, 1, -1, 0])
 mi_13 = it_3and.mutual_info([1, -1, 1, 0])
@@ -129,6 +134,11 @@ it_par.set_equal_interval_binning([2] * 4, [0] * 4, [1] * 4)
 it_par.add_data(data)
 
 # PID-ing
+# NOTE: The terms estimated below do not represent the 18 terms 
+# of the 3 source PID decomposition. This is just an example of
+# some of the different things you could do with the dataset. 
+# For instance, redundant_12 is just the two variable redundant
+# info between var==1 and var==2, and does not consider var==3
 total_mi = it_par.mutual_info([1, 1, 1, 0])
 redundant_info = it_par.redundant_info([1, 2, 3, 0])
 redundant_12 = it_par.redundant_info([1, 2, -1, 0])
