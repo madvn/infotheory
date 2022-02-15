@@ -797,12 +797,12 @@ class InfoTools{
                 cerr << "For second order PID synergy, there needs to be at least 4 variables identified in varIDs using [0, 1, 2, 3]" << endl;
                 exit(1);
             }
+            double syn12 = 0.;
 
             if(multivariateDim == 4){
                 cerr << "For second order PID synergy, there needs to be at least 4 variables identified in varIDs using [0, 1, 2, 3]" << endl;
                 exit(1);
             }
-            double syn12 = 0.;
             else{
                 syn12 = synergy4Dsecondorder(varIDs);
             }
