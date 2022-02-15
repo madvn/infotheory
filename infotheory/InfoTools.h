@@ -518,6 +518,53 @@ class InfoTools{
 
             return syn;
         }
+
+        double synergy4Dsecondorder(TVector<int>& varIDs){
+            // second order synergy with three variables - 3 sources and 1 target.
+            // will return the second order synergy of the variables labelled [1,2] with respect to target 0.
+            // Refer to supplementary figure 4 in Williams, P. L., & Beer, R. D. (2010). Nonnegative decomposition of multivariate information. arXiv preprint arXiv:1004.2515.
+
+            ////// all required information atoms
+            // mutual infos
+            double mi12, mi23, mi13, mi123;
+            // 2-2-2 redundant infos
+            double r12r13 = 0., r13r23 = 0., r12r23 = 0.;
+            // 2-2-3 redundant infos
+            double r12r13r23 = 0.;
+
+            TVector<int> viY, vi1, vi2, vi3, vi12, vi23, vi13, vi123;
+            makeAllVarIDCombinations(varIDs, viY, vi1, vi2, vi3, vi12, vi23, vi13, vi123);
+
+            // all mutual info terms
+            mi12 = mutualInfo(vi12);
+            mi23 = mutualInfo(vi23);
+            mi13 = mutualInfo(vi13);
+            mi123 = mutualInfo(vi123);
+
+            // other redundant infos
+            TVector<TVector<TVector<double> > > py;
+            TVector<double> spec12, spec13, spec23;
+            computeSpecProbs(py, viY);
+            specificInfo(spec12, vi12);
+            specificInfo(spec13, vi13);
+            specificInfo(spec23, vi23);
+            for (int l = 1; l <= spec12.Size(); l++){
+                // 2-2 redundant infos
+                r12r13 += py[l][1][1]*(spec12[l]<spec13[l]?spec12[l]:spec13[l]);
+                r13r23 += py[l][1][1]*(spec13[l]<spec23[l]?spec13[l]:spec23[l]);
+                r12r23 += py[l][1][1]*(spec12[l]<spec23[l]?spec12[l]:spec23[l]);
+
+                // 2-3 redundant infos
+                if(spec12[l] <= spec13[l] && spec12[l] <= spec23[l]) r12r13r23 += py[l][1][1]*spec12[l];
+                else if(spec13[l] <= spec12[l] && spec13[l] <= spec23[l]) r12r13r23 += py[l][1][1]*spec13[l];
+                else r12r13r23 += py[l][1][1]*spec23[l];
+            }
+
+            // estimate synergy
+            double syn12 = mi12 + r12r13r23 - r12r13 - r12r23;
+
+            return syn12;
+        }
         #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
         //! Returns redundant information about varIDs==0, in varIDs==1, varIDs==2 and optionally varIDs==3
@@ -725,6 +772,42 @@ class InfoTools{
             }
 
             return syn;
+        }
+
+        //! Returns amount of synergistic information about varIDs==0, in varIDs==1, varIDs==2 in 4 dimensional PID
+        /*! Set other varIDs of dims to be ignored to -1
+        */
+        double synergyorder2(TVector<int>& vIDs){
+            if(vIDs.Size() != nDims){
+                cerr << "varIDs argument must be of size = total dimensionality = " << nDims << endl;
+                cerr << "Skipping this call" << endl;
+                return 0.;
+            }
+
+            TVector<int> varIDs;
+            normalizeBounds(varIDs, vIDs);
+
+            int multivariateDim = 0;
+            for(int d=1; d<=varIDs.Size(); d++){
+                multivariateDim = varIDs[d]>multivariateDim?varIDs[d]:multivariateDim;
+            }
+
+            // making sure there are 3 vars at least
+            if(multivariateDim < 2){
+                cerr << "For second order PID synergy, there needs to be at least 4 variables identified in varIDs using [0, 1, 2, 3]" << endl;
+                exit(1);
+            }
+
+            if(multivariateDim == 4){
+                cerr << "For second order PID synergy, there needs to be at least 4 variables identified in varIDs using [0, 1, 2, 3]" << endl;
+                exit(1);
+            }
+            double syn12 = 0.;
+            else{
+                syn12 = synergy4Dsecondorder(varIDs);
+            }
+
+            return syn12;
         }
 
         //! Estimates complete info decomposition in infos, returns
