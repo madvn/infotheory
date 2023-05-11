@@ -104,4 +104,9 @@ extern "C"
         to_tvector_int(t_varIDs, varIDs);
         return PyFloat_FromDouble(it->synergy(t_varIDs));
     }
+    PyObject* synergy_order2_c_wrapper(InfoTools* it, PyObject* varIDs){
+        TVector<int> t_varIDs;
+        to_tvector_int(t_varIDs, varIDs);
+        return PyFloat_FromDouble(it->synergyorder2(t_varIDs));
+    }
 }

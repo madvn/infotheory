@@ -17,6 +17,8 @@ https://github.com/madvn/infotheory"""
 # export CXXFLAGS="-mmacosx-version-min=10.9"
 # export LDFLAGS="-mmacosx-version-min=10.9"
 
+os.environ["LDFLAGS"] = "-mmacosx-version-min=10.9"
+
 extra_compile_args = []
 if sys.platform == "darwin":
     extra_compile_args = ["-stdlib=libc++", "-mmacosx-version-min=10.9", "-v"]

@@ -241,3 +241,24 @@ class InfoTools(object):
         synergy_wrapper.argtypes = [c_void_p, py_object]
         synergy_wrapper.restype = c_double
         return synergy_wrapper(self._obj, list(var_IDs))
+
+    def synergy_second_order(self, var_IDs):
+        """ Compute second order synergistic information about a random var from two of three random vars for datapoints that have already been added in 4D PID.
+        The target random var is identified by varIDs==0
+        The sources are identified by varIDs==1 and varIDs==2 - varIDs==3 must be specified for calculation but is not classed as a source.
+        Set varIDs=-1 for dimensions to be ignored.
+
+        ARGS:
+        varIDs: (list-like, size=dims) list of length equal to dimensionality of data
+
+        RETURNS:
+        Synergistic information from vars defined by varIDs==1 and varIDs==2 about varIDs==0 in 4D PID.
+
+        Example:
+        if dims = 4, 4D datapoints will be added. If the first dimension denotes the target and the second and third denote the two sources, then set
+        varIDs = [0,1,2,3]
+        """
+        synergy_order2_wrapper = self.libc.synergy_order2_c_wrapper
+        synergy_order2_wrapper.argtypes = [c_void_p, py_object]
+        synergy_order2_wrapper.restype = c_double
+        return synergy_order2_wrapper(self._obj, list(var_IDs))
