@@ -14,7 +14,9 @@ long_description = """# Package for Mulativariate Information theoretic analyses
 https://github.com/madvn/infotheory"""
 
 # MacOS
-os.environ["CXXFLAGS"] = "-mmacosx-version-min=10.9"
+os.system('export CXXFLAGS="-mmacosx-version-min=10.9"')
+os.system('export LDFLAGS="-mmacosx-version-min=10.9"')
+
 os.environ["LDFLAGS"] = "-mmacosx-version-min=10.9"
 
 extra_compile_args = []
